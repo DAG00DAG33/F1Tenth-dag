@@ -1,0 +1,8 @@
+[submodule "src/vesc"]
+	path = src/vesc
+	url = https://github.com/f1tenth/vesc.git
+	branch = foxy
+[submodule "src/ldlidar"]
+	path = src/ldlidar
+	url = https://github.com/linorobot/ldlidar
+	branch = ros2
