@@ -20,7 +20,7 @@ private:
 
   float *ranges;
 
-  float mean_of_ranges_from_to(int start, int end){
+  float mean_of_ranges_from_to(int start, int end) const{
     float sum = 0;
     int count = 0;
     start = map_450_to_360(start);
