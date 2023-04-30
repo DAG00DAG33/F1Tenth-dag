@@ -25,3 +25,9 @@ ros2 run tf2_ros static_transform_publisher 0 0 0 0.0 0.0 0.0 map laser
 
 
 colcon build --symlink-install --parallel-workers 1   --packages-select joystick_control
+
+
+
+
+export CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake
+
