@@ -1,7 +1,0 @@
-launch_joy_node: 1
-launch_joystick_control_node: 1
-launch_ldlidar_node: 1
-serial_port: "/dev/ttyUSB0"
-launch_vesc_driver_node: 1
-launch_static_transform_publisher_node: 1
-
