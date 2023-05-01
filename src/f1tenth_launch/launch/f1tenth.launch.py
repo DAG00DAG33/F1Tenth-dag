@@ -13,11 +13,6 @@ import os
 def generate_launch_description():
     package_name = 'f1tenth_launch'
 
-    #all_config_default = os.path.join(
-    #    get_package_share_directory(package_name),
-    #    'config',
-    #    package_name + '.yaml'
-    #)
     vesc_config_default = os.path.join(
         get_package_share_directory(package_name),
         'config',
@@ -44,6 +39,11 @@ def generate_launch_description():
 
     talker_ena_la = DeclareLaunchArgument(
         'talker_node_ena',
+        default_value='0'
+    )
+
+    joystick_control_ena_la = DeclareLaunchArgument(
+        'joystick_control_ena',
         default_value='1'
     )
 
@@ -51,6 +51,7 @@ def generate_launch_description():
         vesc_config_la,
         sensors_config_la,
         talker_ena_la,
+        joystick_control_ena_la,
         Node(
             package='demo_nodes_cpp',
             executable='talker',
@@ -61,15 +62,15 @@ def generate_launch_description():
             package='joy',
             executable='joy_node',
             name='joy_node',
-            #condition=enable_condition('launch_joy_node'),
+            condition=IfCondition(LaunchConfiguration('joystick_control_ena')),
             output='screen'
         ),
         Node(
-            package='joystick_control',
-            executable='joystick_control_node',
-            name='joystick_control_node',
-            #condition=enable_condition('launch_joystick_control_node'),
-            output='screen'
+           package='joystick_control',
+           executable='joystick_control_node',
+           name='joystick_control_node',
+           #condition=enable_condition('launch_joystick_control_node'),
+           output='screen'
         ),
         Node(
             package='ldlidar',
@@ -78,19 +79,6 @@ def generate_launch_description():
             output='screen',
             parameters=[LaunchConfiguration('sensors_config')]
         ),
-        #IncludeLaunchDescription(
-        #    PythonLaunchDescriptionSource([os.path.join(
-        #        get_package_share_directory('ldlidar'), 'launch'),
-        #        '/ldlidar.launch.py']),
-        #    launch_arguments={'serial_port': '/dev/ttyUSB0'}.items(),
-        #),
-        #IncludeLaunchDescription(
-        #   PythonLaunchDescriptionSource([os.path.join(
-        #        get_package_share_directory('vesc_driver'), 'launch'),
-        #        '/vesc_driver_node.launch.py']),
-        #    launch_arguments={'port': '/dev/pepepep'}.items(),
-        #    #port: "/dev/ttyACM0"
-        ##),
         Node(
             package='vesc_driver',
             executable='vesc_driver_node',
@@ -109,18 +97,4 @@ def generate_launch_description():
             name='ackermann_to_vesc_node',
             parameters=[LaunchConfiguration('vesc_config')]
         ),
-
-        #Node(
-        #    package='ldlidar',
-        #    executable='ldlidar.launch.py',
-        #    #arguments=['serial_port:=$(arg serial_port)'],
-        #    #condition=enable_condition('launch_ldlidar_node'),
-        #    output='screen'
-        #),
-        #Node(
-        #    package='vesc_driver',
-        #    executable='vesc_driver_node.launch.py',
-        #    #condition=enable_condition('launch_vesc_driver_node'),
-        #    output='screen'
-        #),
   ])

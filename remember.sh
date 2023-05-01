@@ -29,5 +29,11 @@ colcon build --symlink-install --parallel-workers 1   --packages-select joystick
 
 
 
-export CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake
+export CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmakeros2 
+
+topic pub /ackermann_cmd ackermann_msgs/msg/AckermannDriveStamped "{header: {stamp: {sec: 1620443272, nanosec: 0}, frame_id: 'base_link'}, drive: {steering_angle: 0.5, steering_angle_velocity: 0.2, speed: 1.0, acceleration: 0.5, jerk: 0.2}}"
+
+
+
+echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ~/.bashrc
 
