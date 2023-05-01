@@ -42,8 +42,13 @@ def generate_launch_description():
         default_value='0'
     )
 
-    joystick_control_ena_la = DeclareLaunchArgument(
-        'joystick_control_ena',
+    manual_control_ena_la = DeclareLaunchArgument(
+        'manual_control_ena',
+        default_value='1'
+    )
+
+    hysteresis_control_ena_la = DeclareLaunchArgument(
+        'hysteresis_control_ena',
         default_value='1'
     )
 
@@ -51,7 +56,8 @@ def generate_launch_description():
         vesc_config_la,
         sensors_config_la,
         talker_ena_la,
-        joystick_control_ena_la,
+        manual_control_ena_la,
+        hysteresis_control_ena_la,
         Node(
             package='demo_nodes_cpp',
             executable='talker',
@@ -64,12 +70,26 @@ def generate_launch_description():
             name='joy_node',
             output='screen'
         ),
+        # Node(
+        #    package='joystick_control',
+        #    executable='joystick_control_node',
+        #    name='joystick_control_node',
+        #    condition=IfCondition(LaunchConfiguration('joystick_control_ena')),
+        #    output='screen'
+        # ),
         Node(
-           package='joystick_control',
-           executable='joystick_control_node',
-           name='joystick_control_node',
-           condition=IfCondition(LaunchConfiguration('joystick_control_ena')),
-           output='screen'
+            package='manual_control',
+            executable='manual_control_node',
+            name='manual_control_node',
+            condition=IfCondition(LaunchConfiguration('manual_control_ena')),
+            output='screen'
+        ),
+        Node(
+            package='hysteresis_control',
+            executable='autonomous_control_node',
+            name='hysteresis_control_node',
+            condition=IfCondition(LaunchConfiguration('hysteresis_control_ena')),
+            output='screen'
         ),
         Node(
             package='ldlidar',

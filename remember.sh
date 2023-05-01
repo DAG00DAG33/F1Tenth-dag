@@ -38,4 +38,4 @@ ros2 topic pub /ackermann_cmd ackermann_msgs/msg/AckermannDriveStamped "{header:
 
 
 echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ~/.bashrc
-
+export PATH=/opt/ros/foxy/bin:/home/dag00dag33/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/lib/gcc/x86_64-linux-gnu/8
