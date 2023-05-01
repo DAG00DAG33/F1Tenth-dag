@@ -62,14 +62,13 @@ def generate_launch_description():
             package='joy',
             executable='joy_node',
             name='joy_node',
-            condition=IfCondition(LaunchConfiguration('joystick_control_ena')),
             output='screen'
         ),
         Node(
            package='joystick_control',
            executable='joystick_control_node',
            name='joystick_control_node',
-           #condition=enable_condition('launch_joystick_control_node'),
+           condition=IfCondition(LaunchConfiguration('joystick_control_ena')),
            output='screen'
         ),
         Node(

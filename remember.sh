@@ -9,6 +9,7 @@ ros2 topic info /commands/motor/speed
 ros2 interface show std_msgs/msg/Float64
 
 ros2 topic pub --once /commands/motor/speed std_msgs/msg/Float64 "{data: 3000}"
+ros2 topic pub --once /commands/servo/position std_msgs/msg/Float64 "{data: 0.3}"
 
 
 ros2 run joy joy_node
