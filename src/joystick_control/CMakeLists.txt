@@ -15,10 +15,12 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(ackermann_msgs REQUIRED)
 
 
 add_executable(joystick_control_node src/joystick_control_node.cpp)
-ament_target_dependencies(joystick_control_node rclcpp std_msgs sensor_msgs)
+ament_target_dependencies(joystick_control_node rclcpp std_msgs sensor_msgs geometry_msgs ackermann_msgs)
 
 install(TARGETS
   joystick_control_node
