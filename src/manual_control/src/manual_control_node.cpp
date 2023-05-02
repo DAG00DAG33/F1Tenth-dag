@@ -27,7 +27,7 @@ private:
     if (joy->axes[2] != 1.0) {
         ackermann_msg.drive.speed = (-joy->axes[2] * 0.5 + 0.5) * -2.0;
     }
-    ackermann_msg.drive.steering_angle = -joy->axes[0] * 0.37;
+    ackermann_msg.drive.steering_angle = -joy->axes[0] * -0.37;
 
     ackermann_pub_->publish(ackermann_msg);
   }

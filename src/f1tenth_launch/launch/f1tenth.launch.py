@@ -116,4 +116,9 @@ def generate_launch_description():
             name='ackermann_to_vesc_node',
             parameters=[LaunchConfiguration('vesc_config')]
         ),
+        Node(
+            package = "tf2_ros", 
+            executable = "static_transform_publisher",
+            arguments = ["0", "0", "0", "-1.5708", "0", "0", "base_link", "laser"]
+        ),
   ])
