@@ -117,6 +117,11 @@ def generate_launch_description():
             parameters=[LaunchConfiguration('vesc_config')]
         ),
         Node(
+            package='path_manager',
+            executable='path_manager_node',
+            name='path_manager_node',
+        ),
+        Node(
             package = "tf2_ros", 
             executable = "static_transform_publisher",
             arguments = ["0", "0", "0", "-1.5708", "0", "0", "base_link", "laser"]
