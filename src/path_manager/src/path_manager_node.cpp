@@ -54,7 +54,19 @@ public:
     if (!save_path_ena_)
       return;
 
+    if (path_.poses.size() == 0)
+    {
+      RCLCPP_WARN(this->get_logger(), "Path is empty, not saving to file: %s", output_file_.c_str());
+      return;
+    }
+
     std::ofstream output(output_file_);
+
+    if (!output.is_open())
+    {
+      RCLCPP_ERROR(this->get_logger(), "Failed to open file to save path: %s", output_file_.c_str());
+      return;
+    }
 
     for (const auto &pose : path_.poses)
     {
@@ -72,6 +84,12 @@ private:
   {
     std::ifstream input(filename);
     std::string line;
+
+    if (!input.is_open())
+    {
+      RCLCPP_ERROR(this->get_logger(), "Failed to open file to load path: %s", filename.c_str());
+      return;
+    }
 
     while (std::getline(input, line))
     {
