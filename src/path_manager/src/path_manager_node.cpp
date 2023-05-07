@@ -18,20 +18,20 @@ public:
     this->declare_parameter<double>("transform_time_buffer", 1.0);
     this->declare_parameter<double>("path_publish_frequency", 1.0);
     this->declare_parameter<std::string>("output_file", "path.csv");
+    this->declare_parameter<std::string>("input_file", "input_path.csv");
     this->declare_parameter<bool>("save_path_ena", true);
     this->declare_parameter<bool>("load_path_ena", false);
     this->declare_parameter<bool>("create_path_ena", true);
-    this->declare_parameter<std::string>("input_file", "input_path.csv");
 
     std::string odom_topic = this->get_parameter("odom_topic").as_string();
     std::string output_path_topic = this->get_parameter("output_path_topic").as_string();
     double transform_time_buffer = this->get_parameter("transform_time_buffer").as_double();
     double path_publish_frequency = this->get_parameter("path_publish_frequency").as_double();
     output_file_ = this->get_parameter("output_file").as_string();
+    input_file_ = this->get_parameter("input_file").as_string();
     save_path_ena_ = this->get_parameter("save_path_ena").as_bool();
     load_path_ena_ = this->get_parameter("load_path_ena").as_bool();
     create_path_ena_ = this->get_parameter("create_path_ena").as_bool();
-    input_file_ = this->get_parameter("input_file").as_string();
 
     if (load_path_ena_)
     {

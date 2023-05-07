@@ -31,6 +31,12 @@ def generate_launch_description():
         'manual_control.yaml'
     )
 
+    mapping_config_default = os.path.join(
+        get_package_share_directory(package_name),
+        'config',
+        'mapping.yaml'
+    )
+
     vesc_config_la = DeclareLaunchArgument(
         'vesc_config',
         default_value=vesc_config_default,
@@ -46,6 +52,12 @@ def generate_launch_description():
     manual_control_config_la = DeclareLaunchArgument(
         'manual_control_config',
         default_value=manual_control_config_default,
+        description=""
+    )
+
+    mapping_config_la = DeclareLaunchArgument(
+        'mapping_config',
+        default_value=mapping_config_default,
         description=""
     )
 
@@ -68,6 +80,7 @@ def generate_launch_description():
         vesc_config_la,
         sensors_config_la,
         manual_control_config_la,
+        mapping_config_la,
         talker_ena_la,
         manual_control_ena_la,
         hysteresis_control_ena_la,
@@ -139,5 +152,24 @@ def generate_launch_description():
             package = "tf2_ros", 
             executable = "static_transform_publisher",
             arguments = ["0", "0", "0", "-1.5708", "0", "0", "base_link", "laser"]
+        ),
+        # Node(
+        #     package = "slam_toolbox",
+        #     executable = "online_async_launch.py",
+        #     name = "slam_toolbox_node",
+        #     parameters = [{
+        #         "use_sim_time": False,
+        #         "params_file": LaunchConfiguration("mapping_config")
+        #     }],
+        # )
+        Node(
+            package='slam_toolbox',
+            executable='async_slam_toolbox_node',
+            name='slam_toolbox',
+            output='screen',
+            parameters=[
+                LaunchConfiguration('mapping_config'),
+                {'use_sim_time': False}
+            ],
         ),
   ])
