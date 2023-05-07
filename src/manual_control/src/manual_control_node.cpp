@@ -1,9 +1,10 @@
 #include "rclcpp/rclcpp.hpp"
-#include "joy/joy.hpp"
 #include "sensor_msgs/msg/joy.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
-#include "geometry_msgs/msg/twist.hpp"
 #include "ackermann_msgs/msg/ackermann_drive_stamped.hpp"
+
+float linear_map(float x, float in_min, float in_max, float out_min, float out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 class ManualControlNode : public rclcpp::Node {
 private:
@@ -13,38 +14,88 @@ private:
 
   bool button_pressed_;
 
-  void joyCallback(const sensor_msgs::msg::Joy::SharedPtr joy) {
-    button_pressed_ = joy->buttons[4];
+  int lb_button_idx_;
+  int rb_button_idx_;
+  int rt_axis_idx_;
+  int lt_axis_idx_;
+  int left_horizontal_axis_idx_;
 
+  std::string joy_topic_;
+  std::string drive_topic_;
+  std::string ackermann_cmd_topic_;
+
+  double throttle_gain_;
+  double throttle_multiplier_;
+  double steering_gain_;
+  double steering_offset_;
+
+  // Callback function for joystick messages
+  void joyCallback(const sensor_msgs::msg::Joy::SharedPtr joy) {
+    button_pressed_ = joy->buttons[lb_button_idx_];
+
+    // If the LB button is pressed, ignore the joystick commands and use the autonomous driving commands
     if (button_pressed_)
         return;
+
     ackermann_msgs::msg::AckermannDriveStamped ackermann_msg;
     ackermann_msg.header.stamp = this->now();
     ackermann_msg.header.frame_id = "base_link";
 
     // Map joystick axes to servo and throttle values
-    ackermann_msg.drive.speed = (-joy->axes[5] * 0.5 + 0.5) * 2.0;
-    if (joy->axes[2] != 1.0) {
-        ackermann_msg.drive.speed = (-joy->axes[2] * 0.5 + 0.5) * -2.0;
+    ackermann_msg.drive.speed = linear_map(joy->axes[rt_axis_idx_], 1, -1, 0, 1) * throttle_gain_ * (joy->buttons[rb_button_idx_] ? throttle_multiplier_ : 1);
+    if (joy->axes[lt_axis_idx_] != 1.0) {
+      ackermann_msg.drive.speed = -linear_map(joy->axes[lt_axis_idx_], 1, -1, 0, 1) * throttle_gain_ * (joy->buttons[rb_button_idx_] ? throttle_multiplier_ : 1);
     }
-    ackermann_msg.drive.steering_angle = -joy->axes[0] * -0.37;
+    ackermann_msg.drive.steering_angle = -joy->axes[left_horizontal_axis_idx_] * steering_gain_ + steering_offset_;
 
+    // Publish the Ackermann command
     ackermann_pub_->publish(ackermann_msg);
   }
 
+  // Callback function for autonomous driving messages
   void driveCallback(const ackermann_msgs::msg::AckermannDriveStamped::SharedPtr drive) {
+    // If the LB button is pressed, use the autonomous driving commands
     if (button_pressed_) {
       ackermann_pub_->publish(*drive);
     }
   }
 
 public:
-  ManualControlNode() : Node("manual_control_node"), button_pressed_(false) {
+  ManualControlNode() : Node("manual_control_node") {
+    // Declare and set parameters
+    this->declare_parameter<int>("lb_button_idx", 4);
+    this->declare_parameter<int>("rb_button_idx", 5);
+    this->declare_parameter<int>("rt_axis_idx", 5);
+    this->declare_parameter<int>("lt_axis_idx", 2);
+    this->declare_parameter<int>("left_horizontal_axis_idx", 0);
+    this->declare_parameter<std::string>("joy_topic", "/joy");
+    this->declare_parameter<std::string>("drive_topic", "/drive");
+    this->declare_parameter<std::string>("ackermann_cmd_topic", "/ackermann_cmd");
+    this->declare_parameter<double>("throttle_gain", 2);
+    this->declare_parameter<double>("throttle_multiplier", 3);
+    this->declare_parameter<double>("steering_gain", -0.37);
+    this->declare_parameter<double>("steering_offset", 0.0);
+
+    lb_button_idx_ = this->get_parameter("lb_button_idx").as_int();
+    rb_button_idx_ = this->get_parameter("rb_button_idx").as_int();
+    rt_axis_idx_ = this->get_parameter("rt_axis_idx").as_int();
+    lt_axis_idx_ = this->get_parameter("lt_axis_idx").as_int();
+    left_horizontal_axis_idx_ = this->get_parameter("left_horizontal_axis_idx").as_int();
+    joy_topic_ = this->get_parameter("joy_topic").as_string();
+    drive_topic_ = this->get_parameter("drive_topic").as_string();
+    ackermann_cmd_topic_ = this->get_parameter("ackermann_cmd_topic").as_string();
+
+    throttle_gain_ = this->get_parameter("throttle_gain").as_double();
+    throttle_multiplier_ = this->get_parameter("throttle_multiplier").as_double();
+    steering_gain_ = this->get_parameter("steering_gain").as_double();
+    steering_offset_ = this->get_parameter("steering_offset").as_double();
+
+    // Create subscriptions and publisher
     joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(
-      "/joy", 10, std::bind(&ManualControlNode::joyCallback, this, std::placeholders::_1));
+      joy_topic_, 10, std::bind(&ManualControlNode::joyCallback, this, std::placeholders::_1));
     drive_sub_ = this->create_subscription<ackermann_msgs::msg::AckermannDriveStamped>(
-      "/drive", 10, std::bind(&ManualControlNode::driveCallback, this, std::placeholders::_1));
-    ackermann_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>("/ackermann_cmd", 10);
+      drive_topic_, 10, std::bind(&ManualControlNode::driveCallback, this, std::placeholders::_1));
+    ackermann_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>(ackermann_cmd_topic_, 10);
   }
 };
 
@@ -55,3 +106,4 @@ int main(int argc, char** argv) {
   rclcpp::shutdown();
   return 0;
 }
+

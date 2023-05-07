@@ -25,16 +25,28 @@ def generate_launch_description():
         'sensors.yaml'
     )
 
+    manual_control_config_default = os.path.join(
+        get_package_share_directory(package_name),
+        'config',
+        'manual_control.yaml'
+    )
+
     vesc_config_la = DeclareLaunchArgument(
         'vesc_config',
         default_value=vesc_config_default,
-        description="Config file for all the nodes"
+        description=""
     )
 
     sensors_config_la = DeclareLaunchArgument(
         'sensors_config',
         default_value=sensors_config_default,
-        description="Config file for all the nodes"
+        description=""
+    )
+
+    manual_control_config_la = DeclareLaunchArgument(
+        'manual_control_config',
+        default_value=manual_control_config_default,
+        description=""
     )
 
     talker_ena_la = DeclareLaunchArgument(
@@ -55,6 +67,7 @@ def generate_launch_description():
     return LaunchDescription([
         vesc_config_la,
         sensors_config_la,
+        manual_control_config_la,
         talker_ena_la,
         manual_control_ena_la,
         hysteresis_control_ena_la,
@@ -82,7 +95,8 @@ def generate_launch_description():
             executable='manual_control_node',
             name='manual_control_node',
             condition=IfCondition(LaunchConfiguration('manual_control_ena')),
-            output='screen'
+            output='screen',
+            parameters=[LaunchConfiguration('manual_control_config')],
         ),
         Node(
             package='hysteresis_control',
