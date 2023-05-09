@@ -33,6 +33,9 @@ public:
     load_path_ena_ = this->get_parameter("load_path_ena").as_bool();
     create_path_ena_ = this->get_parameter("create_path_ena").as_bool();
 
+
+    count_ = 0;
+
     if (load_path_ena_)
     {
       load_path_from_file(input_file_);
@@ -118,6 +121,10 @@ private:
     if (!create_path_ena_)
       return;
 
+    count_++;
+    if (count_ % 15 != 0)
+      return;
+
     geometry_msgs::msg::PoseStamped input_pose;
     input_pose.header = msg->header;
     input_pose.pose = msg->pose.pose;
@@ -139,6 +146,7 @@ private:
   void publish_path()
   {
     path_publisher_->publish(path_);
+    RCLCPP_INFO(this->get_logger(), "Published path with %d poses", path_.poses.size());
   }
 
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber_;
@@ -153,6 +161,8 @@ private:
   bool save_path_ena_;
   bool load_path_ena_;
   bool create_path_ena_;
+
+  long count_;
 };
 
 int main(int argc, char **argv)

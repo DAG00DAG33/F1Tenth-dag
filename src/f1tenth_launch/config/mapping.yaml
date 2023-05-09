@@ -33,7 +33,7 @@ async_slam_toolbox_node:
     # if you'd like to immediately start continuing a map at a given pose
     # or at the dock, but they are mutually exclusive, if pose is given
     # will use pose
-    #map_file_name: test_steve
+    # map_file_name: test
     # map_start_pose: [0.0, 0.0, 0.0]
     #map_start_at_dock: true
 
@@ -59,7 +59,7 @@ async_slam_toolbox_node:
     link_match_minimum_response_fine: 0.1  
     link_scan_maximum_distance: 1.5
     loop_search_maximum_distance: 3.0
-    do_loop_closing: true 
+    do_loop_closing: true
     loop_match_minimum_chain_size: 10           
     loop_match_maximum_variance_coarse: 3.0  
     loop_match_minimum_response_coarse: 0.35    

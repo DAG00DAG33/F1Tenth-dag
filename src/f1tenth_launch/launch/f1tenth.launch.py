@@ -165,7 +165,7 @@ def generate_launch_description():
         Node(
             package='slam_toolbox',
             executable='async_slam_toolbox_node',
-            name='slam_toolbox',
+            name='async_slam_toolbox_node',
             output='screen',
             parameters=[
                 LaunchConfiguration('mapping_config'),
