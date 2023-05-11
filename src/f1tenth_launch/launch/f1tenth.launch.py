@@ -147,6 +147,7 @@ def generate_launch_description():
             package='path_manager',
             executable='path_manager_node',
             name='path_manager_node',
+            parameters=[LaunchConfiguration('mapping_config')]
         ),
         Node(
             package = "tf2_ros", 

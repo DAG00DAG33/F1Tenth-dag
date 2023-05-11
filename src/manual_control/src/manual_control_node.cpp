@@ -29,12 +29,14 @@ private:
   double steering_gain_;
   double steering_offset_;
 
+  double constant_throttle_;
+
   // Callback function for joystick messages
   void joyCallback(const sensor_msgs::msg::Joy::SharedPtr joy) {
     button_pressed_ = joy->buttons[lb_button_idx_];
 
     // If the LB button is pressed, ignore the joystick commands and use the autonomous driving commands
-    if (button_pressed_)
+    if (button_pressed_ && !joy->buttons[rb_button_idx_])
         return;
 
     ackermann_msgs::msg::AckermannDriveStamped ackermann_msg;
@@ -42,11 +44,14 @@ private:
     ackermann_msg.header.frame_id = "base_link";
 
     // Map joystick axes to servo and throttle values
-    ackermann_msg.drive.speed = linear_map(joy->axes[rt_axis_idx_], 1, -1, 0, 1) * throttle_gain_ * (joy->buttons[rb_button_idx_] ? throttle_multiplier_ : 1);
-    if (joy->axes[lt_axis_idx_] != 1.0) {
-      ackermann_msg.drive.speed = -linear_map(joy->axes[lt_axis_idx_], 1, -1, 0, 1) * throttle_gain_ * (joy->buttons[rb_button_idx_] ? throttle_multiplier_ : 1);
-    }
+    ackermann_msg.drive.speed = linear_map(joy->axes[rt_axis_idx_], 1, -1, 0, 1) * throttle_gain_ * (joy->buttons[rb_button_idx_] && joy->buttons[lb_button_idx_] ? throttle_multiplier_ : 1);
+    if (joy->axes[lt_axis_idx_] != 1.0)
+      ackermann_msg.drive.speed = -linear_map(joy->axes[lt_axis_idx_], 1, -1, 0, 1) * throttle_gain_ * (joy->buttons[rb_button_idx_] && joy->buttons[lb_button_idx_] ? throttle_multiplier_ : 1);
+    if (joy->buttons[rb_button_idx_])
+      ackermann_msg.drive.speed = constant_throttle_;
+
     ackermann_msg.drive.steering_angle = -joy->axes[left_horizontal_axis_idx_] * steering_gain_ + steering_offset_;
+
 
     // Publish the Ackermann command
     ackermann_pub_->publish(ackermann_msg);
@@ -75,6 +80,7 @@ public:
     this->declare_parameter<double>("throttle_multiplier", 3);
     this->declare_parameter<double>("steering_gain", -0.37);
     this->declare_parameter<double>("steering_offset", 0.0);
+    this->declare_parameter<double>("constant_throttle", 1);
 
     lb_button_idx_ = this->get_parameter("lb_button_idx").as_int();
     rb_button_idx_ = this->get_parameter("rb_button_idx").as_int();
@@ -89,6 +95,8 @@ public:
     throttle_multiplier_ = this->get_parameter("throttle_multiplier").as_double();
     steering_gain_ = this->get_parameter("steering_gain").as_double();
     steering_offset_ = this->get_parameter("steering_offset").as_double();
+
+    constant_throttle_ = this->get_parameter("constant_throttle").as_double();
 
     // Create subscriptions and publisher
     joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(

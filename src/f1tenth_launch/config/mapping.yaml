@@ -2,13 +2,15 @@ path_manager_node:
   ros__parameters:
     odom_topic: "/odom"
     output_path_topic: "/path"
+    output_pose_topic: "/map_pose"
     transform_time_buffer: 1.0
     path_publish_frequency: 1.0
-    output_file: "path.csv"
+    path_sampling_frequency: 2.0
+    output_file: "path2.csv"
     input_file: "path.csv"
-    save_path_ena: true
-    create_path_ena: true
-    load_path_ena: false
+    save_path_ena: false
+    sample_path_ena: false
+    load_path_ena: true
 
 
 # online async slam
