@@ -14,6 +14,8 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
   rclcpp::Publisher<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr drive_pub_;
 
+  rclcpp::TimerBase::SharedPtr publish_timer_;
+
   float *ranges;
 
   float mean_of_ranges_from_to(int start, int end) const {
@@ -34,39 +36,41 @@ private:
   }
 
   void autonomousDriving() {
-    rclcpp::Rate loop_rate(10);
+    //rclcpp::Rate loop_rate(10);
 
-    while (rclcpp::ok()) {
-      float limit = 0.5;
-      float steer_limit = 0.3;
+    //while (rclcpp::ok()) {
+    float limit = 0.5;
+    float steer_limit = 0.3;
 
-      float diff_means;
-      float mean_means;
+    float diff_means;
+    float mean_means;
 
-      ackermann_msgs::msg::AckermannDriveStamped drive_msg;
-      drive_msg.header.stamp = this->now();
-      drive_msg.header.frame_id = "base_link";
+    ackermann_msgs::msg::AckermannDriveStamped drive_msg;
+    drive_msg.header.stamp = this->now();
+    drive_msg.header.frame_id = "base_link";
 
-      diff_means = mean_of_ranges_from_to(0, 50) - mean_of_ranges_from_to(130, 180);
-      mean_means = (mean_of_ranges_from_to(0, 50) + mean_of_ranges_from_to(130, 180)) / 2;
-      if (diff_means / mean_means > limit) {
-        drive_msg.drive.steering_angle = steer_limit / 2;
-      } else if (diff_means / mean_means < -limit) {
-        drive_msg.drive.steering_angle = -steer_limit / 2;
-      } else {
-        drive_msg.drive.steering_angle = 0.0;
-      }
-      drive_msg.drive.speed = 0.2;
-
-      drive_pub_->publish(drive_msg);
-      loop_rate.sleep();
+    diff_means = mean_of_ranges_from_to(0, 50) - mean_of_ranges_from_to(130, 180);
+    mean_means = (mean_of_ranges_from_to(0, 50) + mean_of_ranges_from_to(130, 180)) / 2;
+    RCLCPP_INFO(this->get_logger(), "diff_means: %f, mean_means: %f --> %f", diff_means, mean_means, diff_means / mean_means);
+    if (diff_means / mean_means > limit) {
+      drive_msg.drive.steering_angle = -steer_limit;
+    } else if (diff_means / mean_means < -limit) {
+      drive_msg.drive.steering_angle = steer_limit;
+    } else {
+      drive_msg.drive.steering_angle = 0.0;
     }
+    drive_msg.drive.speed = 1.0;
+
+    drive_pub_->publish(drive_msg);
+      //loop_rate.sleep();
+    //}
   }
 
   void scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan) const {
     for (int i = 0; i < 450; i++) {
       ranges[i] = scan->ranges[i];
     }
+    //RCLCPP_INFO(this->get_logger(), "scanCallback");
   }
 
 public:
@@ -74,9 +78,14 @@ public:
     scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
       "/scan", 10, std::bind(&AutonomousControlNode::scanCallback, this, std::placeholders::_1));
     drive_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>("/drive", 10);
+    
+    publish_timer_ = this->create_wall_timer(
+      std::chrono::duration<double>(1.0 / 10.0),
+      std::bind(&AutonomousControlNode::autonomousDriving, this));
+
     ranges = new float[450];
 
-    autonomousDriving();
+    //autonomousDriving();
   }
 };
 

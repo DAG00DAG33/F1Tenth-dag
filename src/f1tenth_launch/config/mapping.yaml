@@ -9,8 +9,8 @@ path_manager_node:
     output_file: "path2.csv"
     input_file: "path.csv"
     save_path_ena: false
-    sample_path_ena: false
-    load_path_ena: true
+    sample_path_ena: true
+    load_path_ena: false
 
 
 # online async slam
