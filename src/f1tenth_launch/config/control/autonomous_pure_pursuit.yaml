@@ -1,16 +1,31 @@
 path_manager_node:
-  ros__parameters:
-    odom_topic: "/odom"
-    output_path_topic: "/path"
-    output_pose_topic: "/map_pose"
-    transform_time_buffer: 1.0
-    path_publish_frequency: 1.0
-    path_sampling_frequency: 2.0
-    output_file: "path2.csv"
-    input_file: "path.csv"
-    save_path_ena: false
-    sample_path_ena: true
-    load_path_ena: false
+  target:
+    ros__parameters:
+      odom_topic: "/odom"
+      output_path_topic: "/targer_path"
+      #output_pose_topic: "/map_pose"
+      transform_time_buffer: 1.0
+      path_publish_frequency: 1.0
+      #path_sampling_frequency: 2.0
+      #output_file: "path2.csv"
+      input_file: "path3.csv"
+      save_path_ena: false
+      sample_path_ena: false
+      load_path_ena: true
+  path:
+    ros__parameters:
+      odom_topic: "/odom"
+      output_path_topic: "/path"
+      output_pose_topic: "/map_pose"
+      transform_time_buffer: 1.0
+      path_publish_frequency: 1.0
+      path_sampling_frequency: 2.0
+      #output_file: "path2.csv"
+      #input_file: "path3.csv"
+      save_path_ena: false
+      sample_path_ena: true
+      load_path_ena: false
+
 
 
 # online async slam
@@ -30,7 +45,7 @@ async_slam_toolbox_node:
     map_frame: map
     base_frame: base_link
     scan_topic: /scan
-    mode: mapping #localization
+    mode: localization #mapping
 
     # if you'd like to immediately start continuing a map at a given pose
     # or at the dock, but they are mutually exclusive, if pose is given
@@ -61,7 +76,7 @@ async_slam_toolbox_node:
     link_match_minimum_response_fine: 0.1  
     link_scan_maximum_distance: 1.5
     loop_search_maximum_distance: 3.0
-    do_loop_closing: true
+    do_loop_closing: false #For lacalization it works better with false
     loop_match_minimum_chain_size: 10           
     loop_match_maximum_variance_coarse: 3.0  
     loop_match_minimum_response_coarse: 0.35    

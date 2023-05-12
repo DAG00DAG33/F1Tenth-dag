@@ -51,7 +51,7 @@ private:
 
     diff_means = mean_of_ranges_from_to(0, 50) - mean_of_ranges_from_to(130, 180);
     mean_means = (mean_of_ranges_from_to(0, 50) + mean_of_ranges_from_to(130, 180)) / 2;
-    RCLCPP_INFO(this->get_logger(), "diff_means: %f, mean_means: %f --> %f", diff_means, mean_means, diff_means / mean_means);
+    //RCLCPP_INFO(this->get_logger(), "diff_means: %f, mean_means: %f --> %f", diff_means, mean_means, diff_means / mean_means);
     if (diff_means / mean_means > limit) {
       drive_msg.drive.steering_angle = -steer_limit;
     } else if (diff_means / mean_means < -limit) {
