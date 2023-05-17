@@ -2,7 +2,7 @@ path_manager_node:
   target:
     ros__parameters:
       odom_topic: "/odom"
-      output_path_topic: "/targer_path"
+      output_path_topic: "/target_path"
       #output_pose_topic: "/map_pose"
       transform_time_buffer: 1.0
       path_publish_frequency: 1.0
