@@ -112,15 +112,15 @@ def generate_launch_description():
         Node(
             package='path_manager',
             executable='path_manager_node',
-            name='path_manager_node_target',
-            namespace='target',
+            name='target',
+            #namespace='target',
             parameters=[LaunchConfiguration('control_config')]
         ),
         Node(
             package='path_manager',
             executable='path_manager_node',
-            name='path_manager_node_path',
-            namespace='path',
+            name='path',
+            #namespace='path',
             parameters=[LaunchConfiguration('control_config')]
         ),
         Node(

@@ -21,7 +21,7 @@ public:
     {
         // Initialize parameters
         this->declare_parameter<double>("wheelbase", 0.3);
-        this->declare_parameter<double>("lookahead_distance", 1.0);
+        this->declare_parameter<double>("lookahead_distance", 0.6);
         this->declare_parameter<std::string>("car_frame", "base_link");
         this->declare_parameter<double>("constant_throttle", 1.0);
         this->declare_parameter<std::string>("drive_topic", "/drive");
@@ -38,8 +38,8 @@ public:
         current_pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(current_pose_topic, 10, std::bind(&PurePursuitNode::currentPoseCallback, this, std::placeholders::_1));
         target_path_sub_ = this->create_subscription<nav_msgs::msg::Path>(target_topic, 10, std::bind(&PurePursuitNode::targetPathCallback, this, std::placeholders::_1));
         drive_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>(drive_topic, 10);
-        lookahead_point_pub_ = this->create_publisher<geometry_msgs::msg::Point>("/lookahead_point", 10);
-        closest_point_pub_ = this->create_publisher<geometry_msgs::msg::Point>("/closest_point", 10);
+        lookahead_point_pub_ = this->create_publisher<geometry_msgs::msg::PointStamped>("/lookahead_point", 10);
+        closest_point_pub_ = this->create_publisher<geometry_msgs::msg::PointStamped>("/closest_point", 10);
     }
 
 private:
@@ -48,12 +48,14 @@ private:
     {
         current_pose_ = *msg;
         current_pose_received_ = true;
+        RCLCPP_INFO(this->get_logger(), "pose received");
         calculateControl();
     }
 
     void targetPathCallback(const nav_msgs::msg::Path::SharedPtr msg)
     {
         target_path_ = *msg;
+        RCLCPP_INFO(this->get_logger(), "target received");
         if (current_pose_received_)
             calculateControl();
     }
@@ -94,6 +96,7 @@ private:
         
         // calculate the curvature
         double radius = calculateRadius(transformed_lookahead_point);
+        RCLCPP_INFO(this->get_logger(), "radius: %f", radius);
         
         // calculate the steering angle based on the curvature
         double steering_angle = std::atan(wheelbase_ / radius);
@@ -106,6 +109,7 @@ private:
         drive_msg.drive.speed = constant_throttle_;  // let's use a constant speed for simplicity
         
         drive_pub_->publish(drive_msg);
+        RCLCPP_INFO(this->get_logger(), "drive published");
     }
 
     double calculateDistance(const geometry_msgs::msg::Point& p1, const geometry_msgs::msg::Point& p2)
@@ -172,8 +176,8 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr current_pose_sub_;
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr target_path_sub_;
     rclcpp::Publisher<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr drive_pub_;
-    rclcpp::Publisher<geometry_msgs::msg::Point>::SharedPtr lookahead_point_pub_;
-    rclcpp::Publisher<geometry_msgs::msg::Point>::SharedPtr closest_point_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr lookahead_point_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr closest_point_pub_;
 
     geometry_msgs::msg::PoseStamped current_pose_;
     bool current_pose_received_;
