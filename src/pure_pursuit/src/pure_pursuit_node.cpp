@@ -19,20 +19,27 @@ class PurePursuitNode : public rclcpp::Node
 public:
     PurePursuitNode() : Node("pure_pursuit_node"), current_pose_received_(false)
     {
-        // Initialize ROS communication
-        current_pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>("/map_pose", 10, std::bind(&PurePursuitNode::currentPoseCallback, this, std::placeholders::_1));
-        target_path_sub_ = this->create_subscription<nav_msgs::msg::Path>("/target_path", 10, std::bind(&PurePursuitNode::targetPathCallback, this, std::placeholders::_1));
-        drive_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>("/drive", 10);
-        lookahead_point_pub_ = this->create_publisher<geometry_msgs::msg::Point>("/lookahead_point", 10);
-        closest_point_pub_ = this->create_publisher<geometry_msgs::msg::Point>("/closest_point", 10);
-
         // Initialize parameters
         this->declare_parameter<double>("wheelbase", 0.3);
         this->declare_parameter<double>("lookahead_distance", 1.0);
         this->declare_parameter<std::string>("car_frame", "base_link");
+        this->declare_parameter<double>("constant_throttle", 1.0);
+        this->declare_parameter<std::string>("drive_topic", "/drive");
+        this->declare_parameter<std::string>("target_topic", "/target_path");
+        this->declare_parameter<std::string>("current_pose_topic", "/map_pose");
         wheelbase_ = this->get_parameter("wheelbase").as_double();
         car_frame_ = this->get_parameter("car_frame").as_string();
         lookahead_distance_ = this->get_parameter("lookahead_distance").as_double();
+        constant_throttle_ = this->get_parameter("constant_throttle").as_double();
+        std::string drive_topic = this->get_parameter("drive_topic").as_string();
+        std::string target_topic = this->get_parameter("target_topic").as_string();
+        std::string current_pose_topic = this->get_parameter("current_pose_topic").as_string();
+
+        current_pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(current_pose_topic, 10, std::bind(&PurePursuitNode::currentPoseCallback, this, std::placeholders::_1));
+        target_path_sub_ = this->create_subscription<nav_msgs::msg::Path>(target_topic, 10, std::bind(&PurePursuitNode::targetPathCallback, this, std::placeholders::_1));
+        drive_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>(drive_topic, 10);
+        lookahead_point_pub_ = this->create_publisher<geometry_msgs::msg::Point>("/lookahead_point", 10);
+        closest_point_pub_ = this->create_publisher<geometry_msgs::msg::Point>("/closest_point", 10);
     }
 
 private:
@@ -96,7 +103,7 @@ private:
         drive_msg.header.stamp = this->now();
         drive_msg.header.frame_id = car_frame_;
         drive_msg.drive.steering_angle = steering_angle;
-        drive_msg.drive.speed = 1.0;  // let's use a constant speed for simplicity
+        drive_msg.drive.speed = constant_throttle_;  // let's use a constant speed for simplicity
         
         drive_pub_->publish(drive_msg);
     }
@@ -174,6 +181,7 @@ private:
     double wheelbase_;
     double lookahead_distance_;
     std::string car_frame_;
+    double constant_throttle_;
 };
 
 

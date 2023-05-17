@@ -133,10 +133,10 @@ def generate_launch_description():
                 {'use_sim_time': False}
             ],
         ),
-        # Node(
-        #     package='pure_pursuit',
-        #     executable='pure_pursuit_node',
-        #     name='pure_pursuit_node',
-        #     parameters=[LaunchConfiguration('control_config')]
-        # ),
+        Node(
+            package='pure_pursuit',
+            executable='pure_pursuit_node',
+            name='pure_pursuit_node',
+            parameters=[LaunchConfiguration('control_config')]
+        ),
   ])

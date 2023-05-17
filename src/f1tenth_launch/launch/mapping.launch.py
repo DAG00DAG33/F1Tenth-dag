@@ -63,7 +63,7 @@ def generate_launch_description():
 
     hysteresis_control_ena_la = DeclareLaunchArgument(
         'hysteresis_control_ena',
-        default_value='1'
+        default_value='0'
     )
 
     return LaunchDescription([
@@ -138,4 +138,11 @@ def generate_launch_description():
                 {'use_sim_time': False}
             ],
         ),
+        Node(
+            package='pure_pursuit',
+            executable='pure_pursuit_node',
+            name='pure_pursuit_node',
+            parameters=[LaunchConfiguration('control_config')]
+        ),
+
   ])
