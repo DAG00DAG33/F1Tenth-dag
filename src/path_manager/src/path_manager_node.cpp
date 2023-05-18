@@ -7,7 +7,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <fstream>
 #include <sstream>
-#include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/int8.hpp>
 
 class PathManagerNode : public rclcpp::Node
 {
@@ -52,7 +52,7 @@ public:
     pose_publisher_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(output_pose_topic, 10);
     if (enable_button_used_)
     {
-      button_subscriber_ = this->create_subscription<std_msgs::msg::Bool>(
+      button_subscriber_ = this->create_subscription<std_msgs::msg::Int8>(
         "/enable_0", 10, std::bind(&PathManagerNode::button_callback, this, std::placeholders::_1));
     }
 
@@ -97,7 +97,7 @@ public:
   }
 
 private:
-  void button_callback(const std_msgs::msg::Bool::SharedPtr msg)
+  void button_callback(const std_msgs::msg::Int8::SharedPtr msg)
   {
     button_enabled_pressed_= msg->data;
   }
@@ -174,7 +174,7 @@ private:
   }
 
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber_;
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr button_subscriber_;
+  rclcpp::Subscription<std_msgs::msg::Int8>::SharedPtr button_subscriber_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_publisher_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_publisher_;
   rclcpp::TimerBase::SharedPtr path_publish_timer_;

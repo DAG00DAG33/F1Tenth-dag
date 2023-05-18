@@ -1,7 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joy.hpp"
 #include "ackermann_msgs/msg/ackermann_drive_stamped.hpp"
-#include "std_msgs/msg/bool.hpp"
+#include "std_msgs/msg/int8.hpp"
 
 float linear_map(float x, float in_min, float in_max, float out_min, float out_max) {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -12,7 +12,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub_;
   rclcpp::Subscription<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr drive_sub_;
   rclcpp::Publisher<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr ackermann_pub_;
-  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr enable_button_pub_;
+  rclcpp::Publisher<std_msgs::msg::Int8>::SharedPtr enable_button_pub_;
 
 
   bool button_pressed_;
@@ -37,6 +37,7 @@ private:
   // Callback function for joystick messages
   void joyCallback(const sensor_msgs::msg::Joy::SharedPtr joy) {
     enable_button_pub_->publish(joy->buttons[0]);
+    RCLCPP_INFO(this->get_logger(), "Publish: %i", joy->buttons[0]);
 
 
     button_pressed_ = joy->buttons[lb_button_idx_];
@@ -110,7 +111,7 @@ public:
     drive_sub_ = this->create_subscription<ackermann_msgs::msg::AckermannDriveStamped>(
       drive_topic_, 10, std::bind(&ManualControlNode::driveCallback, this, std::placeholders::_1));
     ackermann_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>(ackermann_cmd_topic_, 10);
-    enable_button_pub_ = this->create_publisher<std_msgs::msg::Bool>("/enable_0", 10);
+    enable_button_pub_ = this->create_publisher<std_msgs::msg::Int8>("/enable_0", 10);
   }
 };
 
