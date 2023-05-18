@@ -20,11 +20,12 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 
 add_executable(path_manager_node src/path_manager_node.cpp)
-ament_target_dependencies(path_manager_node rclcpp geometry_msgs nav_msgs tf2_ros tf2_geometry_msgs)
+ament_target_dependencies(path_manager_node rclcpp geometry_msgs nav_msgs tf2_ros tf2_geometry_msgs std_msgs)
 
 install(
   TARGETS path_manager_node

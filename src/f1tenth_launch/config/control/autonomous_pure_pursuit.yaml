@@ -8,7 +8,7 @@ target:
     path_publish_frequency: 1.0
     #path_sampling_frequency: 2.0
     #output_file: "path2.csv"
-    input_file: "path3.csv"
+    input_file: "paths/path18.csv"
     save_path_ena: false
     sample_path_ena: false
     load_path_ena: true
@@ -51,7 +51,7 @@ async_slam_toolbox_node:
     # if you'd like to immediately start continuing a map at a given pose
     # or at the dock, but they are mutually exclusive, if pose is given
     # will use pose
-    map_file_name: nave_17
+    map_file_name: paths/nave_18
     # map_start_pose: [0.0, 0.0, 0.0]
     map_start_at_dock: true
 

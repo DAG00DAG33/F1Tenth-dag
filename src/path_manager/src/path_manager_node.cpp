@@ -7,6 +7,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <fstream>
 #include <sstream>
+#include <std_msgs/msg/bool.hpp>
 
 class PathManagerNode : public rclcpp::Node
 {
@@ -24,6 +25,7 @@ public:
     this->declare_parameter<bool>("save_path_ena", true);
     this->declare_parameter<bool>("load_path_ena", false);
     this->declare_parameter<bool>("sample_path_ena", true);
+    this->declare_parameter<bool>("enable_button_used", false);
 
     std::string odom_topic = this->get_parameter("odom_topic").as_string();
     std::string output_path_topic = this->get_parameter("output_path_topic").as_string();
@@ -36,6 +38,7 @@ public:
     save_path_ena_ = this->get_parameter("save_path_ena").as_bool();
     load_path_ena_ = this->get_parameter("load_path_ena").as_bool();
     sample_path_ena_ = this->get_parameter("sample_path_ena").as_bool();
+    enable_button_used_ = this->get_parameter("enable_button_used").as_bool();
 
 
     if (load_path_ena_)
@@ -47,6 +50,11 @@ public:
       odom_topic, 10, std::bind(&PathManagerNode::odom_callback, this, std::placeholders::_1));
     path_publisher_ = this->create_publisher<nav_msgs::msg::Path>(output_path_topic, 10);
     pose_publisher_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(output_pose_topic, 10);
+    if (enable_button_used_)
+    {
+      button_subscriber_ = this->create_subscription<std_msgs::msg::Bool>(
+        "/enable_0", 10, std::bind(&PathManagerNode::button_callback, this, std::placeholders::_1));
+    }
 
     transform_time_buffer_ = tf2::durationFromSec(transform_time_buffer);
 
@@ -89,6 +97,11 @@ public:
   }
 
 private:
+  void button_callback(const std_msgs::msg::Bool::SharedPtr msg)
+  {
+    button_enabled_pressed_= msg->data;
+  }
+
   void load_path_from_file(const std::string &filename)
   {
     std::ifstream input(filename);
@@ -147,7 +160,7 @@ private:
 
   void sample_path()
   {
-    if (!sample_path_ena_)
+    if (!sample_path_ena_ || (enable_button_used_ && !button_enabled_pressed_))
       return;
 
     path_.header = transformed_pose_.header;
@@ -161,6 +174,7 @@ private:
   }
 
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr button_subscriber_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_publisher_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_publisher_;
   rclcpp::TimerBase::SharedPtr path_publish_timer_;
@@ -174,7 +188,9 @@ private:
   std::string input_file_;
   bool save_path_ena_;
   bool load_path_ena_;
-  bool sample_path_ena_;
+  bool sample_path_ena_; 
+  bool enable_button_used_;
+  bool button_enabled_pressed_;
 };
 
 int main(int argc, char **argv)

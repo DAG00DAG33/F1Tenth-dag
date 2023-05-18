@@ -84,12 +84,21 @@ private:
                 closest_point = target_path_.poses[i].pose.position;
             }
         }
-        
+
         
         // find the lookahead point on the path
         geometry_msgs::msg::Point lookahead_point = getLookaheadPoint(closest_point, closest_point_index, lookahead_distance_); // we use wheelbase as the lookahead distance for simplicity
-        closest_point_pub_->publish(closest_point);
-        lookahead_point_pub_->publish(lookahead_point);
+        geometry_msgs::msg::PointStamped lookahead_point_stamped;
+        lookahead_point_stamped.point = lookahead_point;
+        lookahead_point_stamped.header.stamp = this->now();
+        lookahead_point_stamped.header.frame_id = "map";
+        geometry_msgs::msg::PointStamped closest_point_stamped;
+        closest_point_stamped.point = closest_point;
+        closest_point_stamped.header.stamp = this->now();
+        closest_point_stamped.header.frame_id = "map";
+
+        closest_point_pub_->publish(closest_point_stamped);
+        lookahead_point_pub_->publish(lookahead_point_stamped);
         
         // transform the lookahead point to the robot's frame
         geometry_msgs::msg::Point transformed_lookahead_point = transformPoint(lookahead_point, current_pose_);
