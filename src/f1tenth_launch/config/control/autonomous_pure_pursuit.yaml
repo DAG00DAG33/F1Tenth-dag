@@ -12,6 +12,12 @@ target:
     save_path_ena: false
     sample_path_ena: false
     load_path_ena: true
+
+pure_pursuit_node:
+  ros__parameters:
+    constant_throttle: 1.8
+    lookahead_distance: 1.2
+
 #path_manager_node:
 path:
   ros__parameters:
@@ -24,7 +30,7 @@ path:
     #output_file: "path2.csv"
     #input_file: "path3.csv"
     save_path_ena: false
-    sample_path_ena: true
+    sample_path_ena: false
     load_path_ena: false
 
 
@@ -61,18 +67,18 @@ async_slam_toolbox_node:
     map_update_interval: 5.0
     resolution: 0.05
     max_laser_range: 12.0 #for rastering images
-    minimum_time_interval: 0.5
+    minimum_time_interval: 0.1
     transform_timeout: 0.2
-    tf_buffer_duration: 30.
-    stack_size_to_use: 40000000 #// program needs a larger stack size to serialize large maps
-    enable_interactive_mode: true
+    tf_buffer_duration: 1. #30.
+    stack_size_to_use: 4000000 #40000000// program needs a larger stack size to serialize large maps
+    enable_interactive_mode: false
 
     # General Parameters
     use_scan_matching: true
     use_scan_barycenter: true
-    minimum_travel_distance: 0.1
-    minimum_travel_heading: 0.5
-    scan_buffer_size: 10
+    minimum_travel_distance: 0.05 #0.1
+    minimum_travel_heading: 0.1 #0.5
+    scan_buffer_size: 3 #10
     scan_buffer_maximum_scan_distance: 10.0
     link_match_minimum_response_fine: 0.1  
     link_scan_maximum_distance: 1.5

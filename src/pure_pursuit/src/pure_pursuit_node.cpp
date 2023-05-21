@@ -40,6 +40,9 @@ public:
         drive_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>(drive_topic, 10);
         lookahead_point_pub_ = this->create_publisher<geometry_msgs::msg::PointStamped>("/lookahead_point", 10);
         closest_point_pub_ = this->create_publisher<geometry_msgs::msg::PointStamped>("/closest_point", 10);
+
+        float controler_period = 0.1;
+        control_timer_ = this->create_wall_timer(std::chrono::duration<double>(controler_period), std::bind(&PurePursuitNode::calculateControl, this));
     }
 
 private:
@@ -48,18 +51,18 @@ private:
     {
         current_pose_ = *msg;
         current_pose_received_ = true;
-        RCLCPP_INFO(this->get_logger(), "pose received");
-        if (target_received_)
-            calculateControl();
+        //RCLCPP_INFO(this->get_logger(), "pose received");
+        // if (target_received_)
+        //     calculateControl();
     }
 
     void targetPathCallback(const nav_msgs::msg::Path::SharedPtr msg)
     {
         target_path_ = *msg;
         target_received_ = true;
-        RCLCPP_INFO(this->get_logger(), "target received");
-        if (current_pose_received_)
-            calculateControl();
+        //RCLCPP_INFO(this->get_logger(), "target received");
+        // if (current_pose_received_)
+        //     calculateControl();
     }
 
     void calculateControl()
@@ -73,6 +76,8 @@ private:
         // 5. Publish AckermannDriveStamped message
 
         // find the closest point on the path
+        if (!target_received_ || !current_pose_received_)
+            return;
         geometry_msgs::msg::Point closest_point;
         double min_distance = std::numeric_limits<double>::max();
         int closest_point_index = 0;
@@ -189,6 +194,7 @@ private:
     rclcpp::Publisher<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr drive_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr lookahead_point_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr closest_point_pub_;
+    rclcpp::TimerBase::SharedPtr control_timer_;
 
     geometry_msgs::msg::PoseStamped current_pose_;
     bool current_pose_received_;
