@@ -122,7 +122,7 @@ private:
         drive_msg.header.stamp = this->now();
         drive_msg.header.frame_id = car_frame_;
         drive_msg.drive.steering_angle = steering_angle;
-        drive_msg.drive.speed = constant_throttle_;  // let's use a constant speed for simplicity
+        drive_msg.drive.speed = calculateSpeed(radius, closest_point_index);
         
         drive_pub_->publish(drive_msg);
         RCLCPP_INFO(this->get_logger(), "drive published");
@@ -186,8 +186,15 @@ private:
 
     double calculateRadius(const geometry_msgs::msg::Point& point)
     {
-        return point.y / (1 - cos(M_PI - 2*std::atan(std::abs(point.x) / point.y)));
+        //return point.y / (1 - cos(M_PI - 2*std::atan(std::abs(point.x) / point.y)));
+        float dis_sqr = point.x*point.x + point.y*point.y;
+        return dis_sqr / (2*point.y);
     };
+
+    double calculateSpeed(const float radius)
+    {
+        return constant_throttle_;  // let's use a constant speed for simplicity
+    }
 
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr current_pose_sub_;
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr target_path_sub_;
