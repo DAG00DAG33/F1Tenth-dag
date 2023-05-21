@@ -20,7 +20,7 @@ public:
     PurePursuitNode() : Node("pure_pursuit_node"), current_pose_received_(false), target_received_(false)
     {
         // Initialize parameters
-        this->declare_parameter<double>("wheelbase", 0.3);
+        this->declare_parameter<double>("wheelbase", 0.25);
         this->declare_parameter<double>("lookahead_distance", 0.6);
         this->declare_parameter<std::string>("car_frame", "base_link");
         this->declare_parameter<double>("constant_throttle", 1.0);
