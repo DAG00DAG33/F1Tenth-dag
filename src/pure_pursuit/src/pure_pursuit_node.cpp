@@ -191,7 +191,7 @@ private:
         return dis_sqr / (2*point.y);
     };
 
-    double calculateSpeed(const float radius)
+    double calculateSpeed(const float radius, const unsigned int closest_point_index)
     {
         return constant_throttle_;  // let's use a constant speed for simplicity
     }

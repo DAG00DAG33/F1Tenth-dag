@@ -8,15 +8,15 @@ target:
     path_publish_frequency: 1.0
     #path_sampling_frequency: 2.0
     #output_file: "path2.csv"
-    input_file: "paths/path21.csv"
+    input_file: "paths/path21_v2.csv"
     save_path_ena: false
     sample_path_ena: false
     load_path_ena: true
 
 pure_pursuit_node:
   ros__parameters:
-    constant_throttle: 1.8
-    lookahead_distance: 1.2 #l < 2*min_radius #min_radius = minum possible by the car or minimum in the track
+    constant_throttle: 1.5
+    lookahead_distance: 0.8 #l < 2*min_radius #min_radius = minum possible by the car or minimum in the track
 
 #path_manager_node:
 path:
@@ -57,7 +57,7 @@ async_slam_toolbox_node:
     # if you'd like to immediately start continuing a map at a given pose
     # or at the dock, but they are mutually exclusive, if pose is given
     # will use pose
-    map_file_name: maps/casa21
+    map_file_name: maps/casa21_v2
     # map_start_pose: [0.0, 0.0, 0.0]
     map_start_at_dock: true
 
