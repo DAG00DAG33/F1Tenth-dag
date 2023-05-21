@@ -17,7 +17,7 @@
 class PurePursuitNode : public rclcpp::Node
 {
 public:
-    PurePursuitNode() : Node("pure_pursuit_node"), current_pose_received_(false)
+    PurePursuitNode() : Node("pure_pursuit_node"), current_pose_received_(false), target_received_(false)
     {
         // Initialize parameters
         this->declare_parameter<double>("wheelbase", 0.3);
@@ -49,12 +49,14 @@ private:
         current_pose_ = *msg;
         current_pose_received_ = true;
         RCLCPP_INFO(this->get_logger(), "pose received");
-        calculateControl();
+        if (target_received_)
+            calculateControl();
     }
 
     void targetPathCallback(const nav_msgs::msg::Path::SharedPtr msg)
     {
         target_path_ = *msg;
+        target_received_ = true;
         RCLCPP_INFO(this->get_logger(), "target received");
         if (current_pose_received_)
             calculateControl();
@@ -190,6 +192,7 @@ private:
 
     geometry_msgs::msg::PoseStamped current_pose_;
     bool current_pose_received_;
+    bool target_received_;
     nav_msgs::msg::Path target_path_;
     double wheelbase_;
     double lookahead_distance_;

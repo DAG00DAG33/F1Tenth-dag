@@ -131,8 +131,8 @@ private:
 
       path_.poses.push_back(pose);
     }
-    path_.header.stamp.sec = path_.poses[-1].header.stamp.sec;
-    path_.header.stamp.nanosec = path_.poses[-1].header.stamp.nanosec;
+    path_.header.stamp.sec = path_.poses[0].header.stamp.sec;
+    path_.header.stamp.nanosec = path_.poses[0].header.stamp.nanosec;
     path_.header.frame_id = "map";
 
     input.close();

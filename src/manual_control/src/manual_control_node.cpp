@@ -39,7 +39,7 @@ private:
     std_msgs::msg::Int8 enable_button_publish;
     enable_button_publish.data = joy->buttons[0];
     enable_button_pub_->publish(enable_button_publish);
-    RCLCPP_INFO(this->get_logger(), "Publish: %i", enable_button_publish);
+    //RCLCPP_INFO(this->get_logger(), "Publish: %i", enable_button_publish);
 
 
     button_pressed_ = joy->buttons[lb_button_idx_];

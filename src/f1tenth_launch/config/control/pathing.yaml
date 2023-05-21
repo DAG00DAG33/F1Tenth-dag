@@ -5,7 +5,7 @@ path_manager_node:
     output_pose_topic: "/map_pose"
     transform_time_buffer: 1.0
     path_publish_frequency: 1.0
-    path_sampling_frequency: 2.0
+    path_sampling_frequency: 4.0
     output_file: "paths/path18.csv"
     #input_file: "path.csv"
     save_path_ena: true
