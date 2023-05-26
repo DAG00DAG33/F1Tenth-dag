@@ -6,3 +6,6 @@
 	path = src/ldlidar
 	url = https://github.com/linorobot/ldlidar
 	branch = ros2
+[submodule "src/razor-imu-ros2"]
+	path = src/razor-imu-ros2
+	url = https://github.com/airacingtech/razor-imu-ros2.git
