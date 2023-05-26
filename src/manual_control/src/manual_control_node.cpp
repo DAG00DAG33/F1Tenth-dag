@@ -13,6 +13,7 @@ private:
   rclcpp::Subscription<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr drive_sub_;
   rclcpp::Publisher<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr ackermann_pub_;
   rclcpp::Publisher<std_msgs::msg::Int8>::SharedPtr enable_button_pub_;
+  rclcpp::Publisher<std_msgs::msg::Int8>::SharedPtr enable_button1_pub_;
 
 
   bool button_pressed_;
@@ -39,6 +40,8 @@ private:
     std_msgs::msg::Int8 enable_button_publish;
     enable_button_publish.data = joy->buttons[0];
     enable_button_pub_->publish(enable_button_publish);
+    enable_button_publish.data = joy->buttons[1];
+    enable_button1_pub_->publish(enable_button_publish);
     //RCLCPP_INFO(this->get_logger(), "Publish: %i", enable_button_publish);
 
 
@@ -114,6 +117,7 @@ public:
       drive_topic_, 10, std::bind(&ManualControlNode::driveCallback, this, std::placeholders::_1));
     ackermann_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>(ackermann_cmd_topic_, 10);
     enable_button_pub_ = this->create_publisher<std_msgs::msg::Int8>("/enable_0", 10);
+    enable_button1_pub_ = this->create_publisher<std_msgs::msg::Int8>("/enable_1", 10);
   }
 };
 

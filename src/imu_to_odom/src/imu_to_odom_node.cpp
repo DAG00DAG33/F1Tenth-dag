@@ -6,7 +6,7 @@
 #include <geometry_msgs/msg/twist_with_covariance.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
-
+#include "std_msgs/msg/int8.hpp"
 
 class ImuToOdometryNode : public rclcpp::Node
 {
@@ -16,6 +16,7 @@ public:
     {
         odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
         imu_sub_ = this->create_subscription<sensor_msgs::msg::Imu>("imu", 10, std::bind(&ImuToOdometryNode::imuCallback, this, std::placeholders::_1));
+        reset_speed_sub_ = this->create_subscription<std_msgs::msg::Int8>("enable_1", 10, std::bind(&ImuToOdometryNode::resetCallback, this, std::placeholders::_1));
 
         velocity_.x = 0.0;
         velocity_.y = 0.0;
@@ -48,6 +49,31 @@ public:
     }
 
 private:
+
+    void resetCallback(const std_msgs::msg::Int8::SharedPtr msg)
+    {
+        if (msg->data == 1)
+        {
+            velocity_.x = 0.0;
+            velocity_.y = 0.0;
+            velocity_.z = 0.0;
+
+            // angle_ = 0.0;
+
+            // last_time_ = this->now();
+
+            // avg_start_time_ = this->now();
+
+            // avg_data_count_ = 0;
+            // avg_sum_linear_acceleration_.x = 0;
+            // avg_sum_linear_acceleration_.y = 0;
+            // avg_sum_linear_acceleration_.z = 0;
+            // avg_sum_angular_velocity_ = 0;
+
+            // avg_calculated_ = false;
+        }
+    }
+
     void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg)
     {
         auto current_time = this->now();
@@ -75,14 +101,9 @@ private:
 
             avg_calculated_ = true;
         }
-        // Compensate with averages
-        if (avg_calculated_)
+        if (!avg_calculated_)
         {
-            // msg->linear_acceleration.x -= avg_linear_acceleration_.x;
-            // msg->linear_acceleration.y -= avg_linear_acceleration_.y;
-            // msg->linear_acceleration.z -= avg_linear_acceleration_.z;
-            // msg->angular_velocity.z -= avg_angular_velocity_;
-            ;
+            return;
         }
 
         // Integrate linear acceleration to get velocity
@@ -113,7 +134,7 @@ private:
         //odom_msg.pose.pose.position = position_;
         odom_msg.pose.pose.position.x = position_.x;
         odom_msg.pose.pose.position.y = position_.y;
-        odom_msg.pose.pose.position.z = position_.z;
+        odom_msg.pose.pose.position.z = 0; //position_.z;
         //odom_msg.pose.pose.orientation = orientation_;
         odom_msg.pose.pose.orientation.x = orientation_.x;
         odom_msg.pose.pose.orientation.y = orientation_.y;
@@ -134,6 +155,7 @@ private:
 
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
+    rclcpp::Subscription<std_msgs::msg::Int8>::SharedPtr reset_speed_sub_;
     rclcpp::Time last_time_;
     geometry_msgs::msg::Vector3 velocity_;
     geometry_msgs::msg::Vector3 position_;
