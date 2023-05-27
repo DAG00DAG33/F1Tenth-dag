@@ -116,13 +116,15 @@ def generate_launch_description():
         #     #namespace='target',
         #     parameters=[LaunchConfiguration('control_config')]
         # ),
-        Node(
-            package='path_manager',
-            executable='path_manager_node',
-            name='path',
-            #namespace='path',
-            parameters=[LaunchConfiguration('control_config')]
-        ),
+        # Node(
+        #     package='path_manager',
+        #     executable='path_manager_node',
+        #     name='path',
+        #     #namespace='path',
+        #     parameters=['save_path_ena': False,
+        #                 'load_path_ena': False,
+        #                 'save_path_ena': False]
+        # ),
         # Node(
         #     package='slam_toolbox',
         #     executable='async_slam_toolbox_node',
