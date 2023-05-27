@@ -13,6 +13,12 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "ackermann_msgs/msg/ackermann_drive_stamped.hpp"
 
+double linear_map(const double min_in, const double max_in, const double mint_out, const double max_out, double x){
+    return (x - min_in) * (max_out - mint_out) / (max_in - min_in) + mint_out;
+}
+
+
+
 
 class PurePursuitNode : public rclcpp::Node
 {
@@ -24,6 +30,8 @@ public:
         this->declare_parameter<double>("lookahead_distance", 0.6);
         this->declare_parameter<std::string>("car_frame", "base_link");
         this->declare_parameter<double>("constant_throttle", 1.0);
+        this->declare_parameter<double>("max_throttle", 3.0);
+        this->declare_parameter<double>("min_throttle", 1.5);
         this->declare_parameter<std::string>("drive_topic", "/drive");
         this->declare_parameter<std::string>("target_topic", "/target_path");
         this->declare_parameter<std::string>("current_pose_topic", "/map_pose");
@@ -31,6 +39,8 @@ public:
         car_frame_ = this->get_parameter("car_frame").as_string();
         lookahead_distance_ = this->get_parameter("lookahead_distance").as_double();
         constant_throttle_ = this->get_parameter("constant_throttle").as_double();
+        max_throttle_ = this->get_parameter("max_throttle").as_double();
+        min_throttle_ = this->get_parameter("min_throttle").as_double();
         std::string drive_topic = this->get_parameter("drive_topic").as_string();
         std::string target_topic = this->get_parameter("target_topic").as_string();
         std::string current_pose_topic = this->get_parameter("current_pose_topic").as_string();
@@ -117,15 +127,20 @@ private:
         // calculate the steering angle based on the curvature
         double steering_angle = std::atan(wheelbase_ / radius);
 
+        //lookahead for the speed
+        geometry_msgs::msg::Point transformed_lookahead_point_speed = transformPoint(getLookaheadPoint(closest_point, closest_point_index, lookahead_distance_ * 2), current_pose_);
+        double speed = calculateSpeed(transformed_lookahead_point_speed);
+        lookahead_distance_ = 0.5 * speed;// + 0.5 * lookahead_distance_;
+
         // create and publish the AckermannDriveStamped message
         ackermann_msgs::msg::AckermannDriveStamped drive_msg;
         drive_msg.header.stamp = this->now();
         drive_msg.header.frame_id = car_frame_;
         drive_msg.drive.steering_angle = steering_angle;
-        drive_msg.drive.speed = calculateSpeed(radius, closest_point_index);
+        drive_msg.drive.speed = speed;
         
         drive_pub_->publish(drive_msg);
-        RCLCPP_INFO(this->get_logger(), "drive published");
+        //RCLCPP_INFO(this->get_logger(), "drive published");
     }
 
     double calculateDistance(const geometry_msgs::msg::Point& p1, const geometry_msgs::msg::Point& p2)
@@ -187,13 +202,21 @@ private:
     double calculateRadius(const geometry_msgs::msg::Point& point)
     {
         //return point.y / (1 - cos(M_PI - 2*std::atan(std::abs(point.x) / point.y)));
-        float dis_sqr = point.x*point.x + point.y*point.y;
+        double true_x = point.x + 0.25; //adding wheelbase
+        double dis_sqr = true_x*true_x + point.y*point.y;
         return dis_sqr / (2*point.y);
     };
 
-    double calculateSpeed(const float radius, const unsigned int closest_point_index)
+    double calculateSpeed(geometry_msgs::msg::Point transformed_lookahead_point)
     {
-        return constant_throttle_;  // let's use a constant speed for simplicity
+        double radius = calculateRadius(transformed_lookahead_point);
+        if (std::abs(radius) < 1.5*1.5 || transformed_lookahead_point.x < 0.0)
+            return min_throttle_;
+        if (std::abs(radius) > 9.0)
+            return max_throttle_;
+        return std::sqrt(std::abs(radius));
+        
+
     }
 
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr current_pose_sub_;
@@ -211,6 +234,8 @@ private:
     double lookahead_distance_;
     std::string car_frame_;
     double constant_throttle_;
+    double max_throttle_;
+    double min_throttle_;
 };
 
 
