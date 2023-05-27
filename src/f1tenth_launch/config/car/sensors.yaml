@@ -22,14 +22,14 @@ razor_imu_node:
 
     ##### Calibration ####
     # No need to send calibration if they are flashed into firmware already
-    send_calibration: false 
+    send_calibration: true
     ### accelerometer
-    accel_x_min: -250.0
-    accel_x_max: 250.0
-    accel_y_min: -250.0
-    accel_y_max: 250.0
-    accel_z_min: -250.0
-    accel_z_max: 250.0
+    accel_x_min: -255.86 #-250.0
+    accel_x_max: 245.97 #250.0
+    accel_y_min: -249.39 #-250.0
+    accel_y_max: 259.95 #250.0
+    accel_z_min: -245.85 #-250.0
+    accel_z_max: 258.54 #250.0
 
     ### magnetometer
     # standard calibration
@@ -48,9 +48,9 @@ razor_imu_node:
                                0.0, 0.0, 0.0]
 
     ### gyroscope
-    gyro_average_offset_x: 0.0
-    gyro_average_offset_y: 0.0
-    gyro_average_offset_z: 0.0
+    gyro_average_offset_x: -0.01
+    gyro_average_offset_y: -0.04
+    gyro_average_offset_z: 0.01
 
     # Orientation covariance estimation:
     # Observed orientation noise: 0.3 degrees in x, y, 0.6 degrees in z

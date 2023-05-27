@@ -84,7 +84,7 @@ private:
         auto time_delta = (current_time - last_time_).seconds();
 
         // During first second calculate averages
-        if (!avg_calculated_ && (current_time - avg_start_time_).seconds() < 6.0)
+        if (!avg_calculated_ && (current_time - avg_start_time_).seconds() < 25.0)
         {
             avg_data_count_++;
 
@@ -92,6 +92,7 @@ private:
             avg_sum_linear_acceleration_.y += msg->linear_acceleration.y;
             avg_sum_linear_acceleration_.z += msg->linear_acceleration.z;
             avg_sum_angular_velocity_ += msg->angular_velocity.z;
+            return;
         }
         else if (!avg_calculated_ && avg_data_count_ > 0) // After first second calculate averages and print them
         {
@@ -104,9 +105,14 @@ private:
             RCLCPP_INFO(this->get_logger(), "Average Angular Velocity (z): %f", avg_angular_velocity_);
 
             avg_calculated_ = true;
-        }
-        if (!avg_calculated_)
-        {
+            last_time_ = this->now();
+            velocity_.x = 0.0;
+            velocity_.y = 0.0;
+            velocity_.z = 0.0;
+
+            position_.x = 0.0;
+            position_.y = 0.0;
+            position_.z = 0.0;
             return;
         }
 
@@ -117,10 +123,18 @@ private:
         velocity_.y += (-linear_acceleration_x * cos(angle_) + linear_acceleration_y * sin(angle_)) * time_delta;
         // velocity_.z += (msg->linear_acceleration.z -avg_linear_acceleration_.z) * time_delta;
 
+        //decay rate
+        velocity_.x *= 0.999;
+        velocity_.y *= 0.999;
+
+        //RCLCPP_INFO(this->get_logger(), "Pos: %f, %f", position_.x, position_.y);
+        RCLCPP_INFO(this->get_logger(), "Vel: %f, %f", velocity_.x, velocity_.y);
+
         // Integrate velocity to get position
         position_.x += velocity_.x * time_delta;
         position_.y += velocity_.y * time_delta;
         // position_.z += velocity_.z * time_delta;
+
 
         // Integrate angular velocity to get orientation (quaternion)
         // Assuming IMU is horizontal (z-axis pointing up)

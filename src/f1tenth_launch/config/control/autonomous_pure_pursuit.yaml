@@ -15,7 +15,7 @@ target:
 
 pure_pursuit_node:
   ros__parameters:
-    constant_throttle: 1.5
+    constant_throttle: 3 #1.5
     lookahead_distance: 0.8 #l < 2*min_radius #min_radius = minum possible by the car or minimum in the track
 
 #path_manager_node:
