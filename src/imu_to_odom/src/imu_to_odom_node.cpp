@@ -7,6 +7,8 @@
 #include <geometry_msgs/msg/vector3.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
 #include "std_msgs/msg/int8.hpp"
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <tf2_ros/transform_broadcaster.h>
 
 class ImuToOdometryNode : public rclcpp::Node
 {
@@ -46,6 +48,8 @@ public:
 
         avg_calculated_ = false;
 
+        tf_pub_.reset(new tf2_ros::TransformBroadcaster(this));
+
     }
 
 private:
@@ -80,7 +84,7 @@ private:
         auto time_delta = (current_time - last_time_).seconds();
 
         // During first second calculate averages
-        if (!avg_calculated_ && (current_time - avg_start_time_).seconds() < 3.0)
+        if (!avg_calculated_ && (current_time - avg_start_time_).seconds() < 6.0)
         {
             avg_data_count_++;
 
@@ -107,21 +111,23 @@ private:
         }
 
         // Integrate linear acceleration to get velocity
-        velocity_.x += (msg->linear_acceleration.x - avg_linear_acceleration_.x) * time_delta;
-        velocity_.y += (msg->linear_acceleration.y - avg_linear_acceleration_.y) * time_delta;
-        velocity_.z += (msg->linear_acceleration.z -avg_linear_acceleration_.z) * time_delta;
+        double linear_acceleration_x = msg->linear_acceleration.x - avg_linear_acceleration_.x;
+        double linear_acceleration_y = msg->linear_acceleration.y - avg_linear_acceleration_.y;
+        velocity_.x += (linear_acceleration_x * sin(angle_) + linear_acceleration_y * cos(angle_)) * time_delta;
+        velocity_.y += (-linear_acceleration_x * cos(angle_) + linear_acceleration_y * sin(angle_)) * time_delta;
+        // velocity_.z += (msg->linear_acceleration.z -avg_linear_acceleration_.z) * time_delta;
 
         // Integrate velocity to get position
         position_.x += velocity_.x * time_delta;
         position_.y += velocity_.y * time_delta;
-        position_.z += velocity_.z * time_delta;
+        // position_.z += velocity_.z * time_delta;
 
         // Integrate angular velocity to get orientation (quaternion)
         // Assuming IMU is horizontal (z-axis pointing up)
         //double delta_angle = msg->angular_velocity.z * time_delta;
         //orientation_.z = sin(delta_angle / 2);
         //orientation_.w = cos(delta_angle / 2);
-        angle_ += (msg->angular_velocity.z - avg_angular_velocity_) * time_delta;
+        angle_ -= (msg->angular_velocity.z - avg_angular_velocity_) * time_delta;
         orientation_.z = sin(angle_ / 2);
         orientation_.w = cos(angle_ / 2);
 
@@ -143,17 +149,31 @@ private:
         //odom_msg.twist.twist.linear = velocity_;
         odom_msg.twist.twist.linear.x = velocity_.x;
         odom_msg.twist.twist.linear.y = velocity_.y;
-        odom_msg.twist.twist.linear.z = velocity_.z;
+        odom_msg.twist.twist.linear.z = 0;
         odom_msg.twist.twist.angular.x = 0;
         odom_msg.twist.twist.angular.y = 0;
         odom_msg.twist.twist.angular.z = msg->angular_velocity.z;
 
         odom_pub_->publish(odom_msg);
 
+        geometry_msgs::msg::TransformStamped tf;
+        tf.header.frame_id = "odom";
+        tf.child_frame_id = "base_link";
+        tf.header.stamp = current_time;
+        tf.transform.translation.x = position_.x;
+        tf.transform.translation.y = position_.y;
+        tf.transform.translation.z = 0.0;
+        tf.transform.rotation = odom_msg.pose.pose.orientation;
+
+        if (rclcpp::ok()) {
+            tf_pub_->sendTransform(tf);
+        }
+
         last_time_ = current_time;
     }
 
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_pub_;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
     rclcpp::Subscription<std_msgs::msg::Int8>::SharedPtr reset_speed_sub_;
     rclcpp::Time last_time_;

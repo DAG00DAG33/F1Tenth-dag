@@ -90,12 +90,12 @@ def generate_launch_description():
             name='vesc_driver_node',
             parameters=[LaunchConfiguration('vesc_config')]
         ),
-        Node(
-            package='vesc_ackermann',
-            executable='vesc_to_odom_node',
-            name='vesc_to_odom_node',
-            parameters=[LaunchConfiguration('vesc_config')]
-        ),
+        # Node(
+        #     package='vesc_ackermann',
+        #     executable='vesc_to_odom_node',
+        #     name='vesc_to_odom_node',
+        #     parameters=[LaunchConfiguration('vesc_config')]
+        # ),
         Node(
             package='vesc_ackermann',
             executable='ackermann_to_vesc_node',

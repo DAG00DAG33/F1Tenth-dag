@@ -22,9 +22,10 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 add_executable(imu_to_odom_node src/imu_to_odom_node.cpp)
-ament_target_dependencies(imu_to_odom_node rclcpp std_msgs sensor_msgs nav_msgs geometry_msgs)
+ament_target_dependencies(imu_to_odom_node rclcpp std_msgs sensor_msgs nav_msgs geometry_msgs tf2_ros)
 
 install(
   TARGETS imu_to_odom_node
