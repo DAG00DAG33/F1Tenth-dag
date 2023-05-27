@@ -31,11 +31,11 @@ def generate_launch_description():
         'manual_control.yaml'
     )
 
-    control_config_default = os.path.join(
-        get_package_share_directory(package_name),
-        'config/control',
-        'mapping.yaml'
-    )
+    # control_config_default = os.path.join(
+    #     get_package_share_directory(package_name),
+    #     'config/control',
+    #     'autonomous_pure_pursuit.yaml'
+    # )
 
     vesc_config_la = DeclareLaunchArgument(
         'vesc_config',
@@ -55,23 +55,17 @@ def generate_launch_description():
         description=""
     )
 
-    control_config_la = DeclareLaunchArgument(
-        'control_config',
-        default_value=control_config_default,
-        description=""
-    )
-
-    hysteresis_control_ena_la = DeclareLaunchArgument(
-        'hysteresis_control_ena',
-        default_value='0'
-    )
+    # control_config_la = DeclareLaunchArgument(
+    #     'control_config',
+    #     default_value=control_config_default,
+    #     description=""
+    # )
 
     return LaunchDescription([
         vesc_config_la,
         sensors_config_la,
         manual_control_config_la,
-        control_config_la,
-        hysteresis_control_ena_la,
+        # control_config_la,
         Node(
             package = "tf2_ros", 
             executable = "static_transform_publisher",
@@ -115,46 +109,46 @@ def generate_launch_description():
             output='screen',
             parameters=[LaunchConfiguration('manual_control_config')],
         ),
-        Node(
-            package='hysteresis_control',
-            executable='autonomous_control_node',
-            name='hysteresis_control_node',
-            condition=IfCondition(LaunchConfiguration('hysteresis_control_ena')),
-            output='screen'
-        ),
+        # Node(
+        #     package='path_manager',
+        #     executable='path_manager_node',
+        #     name='target',
+        #     #namespace='target',
+        #     parameters=[LaunchConfiguration('control_config')]
+        # ),
         Node(
             package='path_manager',
             executable='path_manager_node',
-            name='path_manager_node',
+            name='path',
+            #namespace='path',
             parameters=[LaunchConfiguration('control_config')]
         ),
-        Node(
-            package='slam_toolbox',
-            executable='async_slam_toolbox_node',
-            name='async_slam_toolbox_node',
-            output='screen',
-            parameters=[
-                LaunchConfiguration('control_config'),
-                {'use_sim_time': False}
-            ],
-        ),
+        # Node(
+        #     package='slam_toolbox',
+        #     executable='async_slam_toolbox_node',
+        #     name='async_slam_toolbox_node',
+        #     output='screen',
+        #     parameters=[
+        #         LaunchConfiguration('control_config'),
+        #         {'use_sim_time': False}
+        #     ],
+        # ),
         # Node(
         #     package='pure_pursuit',
         #     executable='pure_pursuit_node',
         #     name='pure_pursuit_node',
         #     parameters=[LaunchConfiguration('control_config')]
         # ),
-        # Node(
-        #     package='razor_imu_ros2',
-        #     executable='razor_imu_ros2_exe',
-        #     output='screen',
-        #     parameters=[LaunchConfiguration('sensors_config')]
-        # ),
+        Node(
+            package='razor_imu_ros2',
+            executable='razor_imu_ros2_exe',
+            output='screen',
+            parameters=[LaunchConfiguration('sensors_config')]
+        ),
         # Node(
         #     package='imu_to_odom',
         #     executable='imu_to_odom_node',
         #     output='screen',
         #     parameters=[LaunchConfiguration('sensors_config')]
         # ),
-
   ])

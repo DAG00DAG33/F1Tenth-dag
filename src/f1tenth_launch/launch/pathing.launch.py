@@ -144,17 +144,17 @@ def generate_launch_description():
         #     name='pure_pursuit_node',
         #     parameters=[LaunchConfiguration('control_config')]
         # ),
-        Node(
-            package='razor_imu_ros2',
-            executable='razor_imu_ros2_exe',
-            output='screen',
-            parameters=[LaunchConfiguration('sensors_config')]
-        ),
-        Node(
-            package='imu_to_odom',
-            executable='imu_to_odom_node',
-            output='screen',
-            parameters=[LaunchConfiguration('sensors_config')]
-        ),
+        # Node(
+        #     package='razor_imu_ros2',
+        #     executable='razor_imu_ros2_exe',
+        #     output='screen',
+        #     parameters=[LaunchConfiguration('sensors_config')]
+        # ),
+        # Node(
+        #     package='imu_to_odom',
+        #     executable='imu_to_odom_node',
+        #     output='screen',
+        #     parameters=[LaunchConfiguration('sensors_config')]
+        # ),
 
   ])
