@@ -25,22 +25,35 @@ class PurePursuitNode : public rclcpp::Node
 public:
     PurePursuitNode() : Node("pure_pursuit_node"), current_pose_received_(false), target_received_(false)
     {
-        // Initialize parameters
-        this->declare_parameter<double>("wheelbase", 0.25);
-        this->declare_parameter<double>("lookahead_distance", 0.6);
-        this->declare_parameter<std::string>("car_frame", "base_link");
-        this->declare_parameter<double>("constant_throttle", 1.0);
+        //this->declare_parameter<double>("constant_throttle", 1.0);
         this->declare_parameter<double>("max_throttle", 3.0);
+        this->declare_parameter<double>("max_throttle_radius", 9.0);
         this->declare_parameter<double>("min_throttle", 1.5);
+        this->declare_parameter<double>("min_throttle_radius", 2.25);
+        this->declare_parameter<double>("throttle_parameter", 1.0);
+        this->declare_parameter<double>("throttle_lookahead_multiply", 2.0);
+
+        this->declare_parameter<double>("wheelbase", 0.25);
+        this->declare_parameter<double>("initial_lookahead_distance", 0.6);
+        this->declare_parameter<double>("lookahead_parameter", 0.5);
+        this->declare_parameter<std::string>("car_frame", "base_link");
         this->declare_parameter<std::string>("drive_topic", "/drive");
         this->declare_parameter<std::string>("target_topic", "/target_path");
         this->declare_parameter<std::string>("current_pose_topic", "/map_pose");
-        wheelbase_ = this->get_parameter("wheelbase").as_double();
-        car_frame_ = this->get_parameter("car_frame").as_string();
-        lookahead_distance_ = this->get_parameter("lookahead_distance").as_double();
-        constant_throttle_ = this->get_parameter("constant_throttle").as_double();
+
+
+        //constant_throttle_ = this->get_parameter("constant_throttle").as_double();
         max_throttle_ = this->get_parameter("max_throttle").as_double();
+        max_throttle_radius_ = this->get_parameter("max_throttle_radius").as_double();
         min_throttle_ = this->get_parameter("min_throttle").as_double();
+        min_throttle_radius_ = this->get_parameter("min_throttle_radius").as_double();
+        throttle_parameter_ = this->get_parameter("throttle_parameter").as_double();
+        throttle_lookahead_multiply_ = this->get_parameter("throttle_lookahead_multiply").as_double();
+
+        wheelbase_ = this->get_parameter("wheelbase").as_double();
+        lookahead_distance_ = this->get_parameter("initial_lookahead_distance").as_double();
+        lookahead_parameter_ = this->get_parameter("lookahead_parameter").as_double();
+        car_frame_ = this->get_parameter("car_frame").as_string();
         std::string drive_topic = this->get_parameter("drive_topic").as_string();
         std::string target_topic = this->get_parameter("target_topic").as_string();
         std::string current_pose_topic = this->get_parameter("current_pose_topic").as_string();
@@ -77,20 +90,12 @@ private:
 
     void calculateControl()
     {
-        // calculate control
-        // TODO: Implement the pure pursuit algorithm here
-        // 1. Find closest point on path to current pose
-        // 2. Find lookahead point on path
-        // 3. Calculate curvature
-        // 4. Use curvature to calculate steering angle
-        // 5. Publish AckermannDriveStamped message
-
         // find the closest point on the path
         if (!target_received_ || !current_pose_received_)
             return;
         geometry_msgs::msg::Point closest_point;
+        int closest_point_index;
         double min_distance = std::numeric_limits<double>::max();
-        int closest_point_index = 0;
         for (unsigned int i=0; i < target_path_.poses.size(); i++)
         {
             double distance = calculateDistance(current_pose_.pose.position, target_path_.poses[i].pose.position);
@@ -127,10 +132,10 @@ private:
         // calculate the steering angle based on the curvature
         double steering_angle = std::atan(wheelbase_ / radius);
 
-        //lookahead for the speed
-        geometry_msgs::msg::Point transformed_lookahead_point_speed = transformPoint(getLookaheadPoint(closest_point, closest_point_index, lookahead_distance_ * 2), current_pose_);
+        // lookahead for the speed
+        geometry_msgs::msg::Point transformed_lookahead_point_speed = transformPoint(getLookaheadPoint(closest_point, closest_point_index, lookahead_distance_ * throttle_lookahead_multiply_), current_pose_);
         double speed = calculateSpeed(transformed_lookahead_point_speed);
-        lookahead_distance_ = 0.5 * speed;// + 0.5 * lookahead_distance_;
+        lookahead_distance_ = lookahead_parameter_ * speed;
 
         // create and publish the AckermannDriveStamped message
         ackermann_msgs::msg::AckermannDriveStamped drive_msg;
@@ -210,11 +215,11 @@ private:
     double calculateSpeed(geometry_msgs::msg::Point transformed_lookahead_point)
     {
         double radius = calculateRadius(transformed_lookahead_point);
-        if (std::abs(radius) < 1.5*1.5 || transformed_lookahead_point.x < 0.0)
+        if (std::abs(radius) < min_throttle_radius_ || transformed_lookahead_point.x < 0.0)
             return min_throttle_;
-        if (std::abs(radius) > 9.0)
+        if (std::abs(radius) > max_throttle_radius_)
             return max_throttle_;
-        return std::sqrt(std::abs(radius));
+        return std::sqrt(throttle_parameter_ * std::abs(radius));
         
 
     }
@@ -231,11 +236,16 @@ private:
     bool target_received_;
     nav_msgs::msg::Path target_path_;
     double wheelbase_;
-    double lookahead_distance_;
     std::string car_frame_;
-    double constant_throttle_;
+    //double constant_throttle_;
     double max_throttle_;
+    double max_throttle_radius_;
     double min_throttle_;
+    double min_throttle_radius_;
+    double throttle_parameter_;
+    double throttle_lookahead_multiply_;
+    double lookahead_distance_;
+    double lookahead_parameter_;
 };
 
 

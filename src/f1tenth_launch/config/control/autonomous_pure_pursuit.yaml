@@ -15,8 +15,20 @@ target:
 
 pure_pursuit_node:
   ros__parameters:
-    constant_throttle: 1.5
-    lookahead_distance: 0.8 #l < 2*min_radius #min_radius = minum possible by the car or minimum in the track
+    # constant_throttle: 1.5
+    initial_lookahead_distance: 0.8 #l < 2*min_radius #min_radius = minum possible by the car or minimum in the track
+    max_throttle: 3.0
+    max_throttle_radius: 9.0
+    min_throttle: 1.5
+    min_throttle_radius: 2.25
+    throttle_parameter: 1.0
+    throttle_lookahead_multiply: 2.0
+    lookahead_parameter: 0.5
+    car_frame: 'base_link'
+    drive_topic: '/drive'
+    target_topic: '/target_path'
+    current_pose_topic: '/map_pose'
+
 
 #path_manager_node:
 path:
