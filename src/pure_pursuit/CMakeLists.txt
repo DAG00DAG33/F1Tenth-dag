@@ -20,12 +20,13 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(ackermann_msgs REQUIRED)
 
 add_executable(pure_pursuit_node src/pure_pursuit_node.cpp)
-ament_target_dependencies(pure_pursuit_node rclcpp geometry_msgs nav_msgs tf2_ros tf2_geometry_msgs ackermann_msgs)
+ament_target_dependencies(pure_pursuit_node rclcpp geometry_msgs nav_msgs sensor_msgs tf2_ros tf2_geometry_msgs ackermann_msgs)
 
 install(
   TARGETS pure_pursuit_node

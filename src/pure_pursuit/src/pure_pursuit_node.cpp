@@ -12,11 +12,15 @@
 //#include <tf2_ros/buffer.h>
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "ackermann_msgs/msg/ackermann_drive_stamped.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 
 double linear_map(const double min_in, const double max_in, const double mint_out, const double max_out, double x){
     return (x - min_in) * (max_out - mint_out) / (max_in - min_in) + mint_out;
 }
 
+int map_450_to_360(float n) {
+  return int((n / 360) * 450);
+}
 
 
 
@@ -58,17 +62,47 @@ public:
         std::string target_topic = this->get_parameter("target_topic").as_string();
         std::string current_pose_topic = this->get_parameter("current_pose_topic").as_string();
 
-        current_pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(current_pose_topic, 10, std::bind(&PurePursuitNode::currentPoseCallback, this, std::placeholders::_1));
-        target_path_sub_ = this->create_subscription<nav_msgs::msg::Path>(target_topic, 10, std::bind(&PurePursuitNode::targetPathCallback, this, std::placeholders::_1));
+        current_pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+            current_pose_topic, 10, std::bind(&PurePursuitNode::currentPoseCallback, this, std::placeholders::_1));
+        target_path_sub_ = this->create_subscription<nav_msgs::msg::Path>(
+            target_topic, 10, std::bind(&PurePursuitNode::targetPathCallback, this, std::placeholders::_1));
+        scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+            "/scan", 10, std::bind(&PurePursuitNode::scanCallback, this, std::placeholders::_1));
         drive_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>(drive_topic, 10);
         lookahead_point_pub_ = this->create_publisher<geometry_msgs::msg::PointStamped>("/lookahead_point", 10);
         closest_point_pub_ = this->create_publisher<geometry_msgs::msg::PointStamped>("/closest_point", 10);
 
-        float controler_period = 0.1;
+        float controler_period = 0.05;
         control_timer_ = this->create_wall_timer(std::chrono::duration<double>(controler_period), std::bind(&PurePursuitNode::calculateControl, this));
+
+        ranges_ = new double[450];
     }
 
 private:
+
+    float mean_of_ranges_from_to(int start, int end) const {
+        float sum = 0;
+        int count = 0;
+        start = map_450_to_360(start);
+        end = map_450_to_360(end);
+        for (int i = start; i < end; i++) {
+        if (ranges_[i] != std::numeric_limits<float>::infinity()) {
+            // if it is nan discard
+            if (ranges_[i] != ranges_[i])
+            ranges_[i] = 0;
+            sum += ranges_[i];
+            count++;
+        }
+        }
+        return sum / count;
+    }
+
+    void scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan) const {
+        for (int i = 0; i < 450; i++) {
+            ranges_[i] = scan->ranges[i];
+        }
+        //RCLCPP_INFO(this->get_logger(), "scanCallback");
+    }
 
     void currentPoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
     {
@@ -136,6 +170,11 @@ private:
         geometry_msgs::msg::Point transformed_lookahead_point_speed = transformPoint(getLookaheadPoint(closest_point, closest_point_index, lookahead_distance_ * throttle_lookahead_multiply_), current_pose_);
         double speed = calculateSpeed(transformed_lookahead_point_speed);
         lookahead_distance_ = lookahead_parameter_ * speed;
+
+        if (std::abs(radius) > 3.5 || mean_of_ranges_from_to(85, 95) < lookahead_distance_ * 0.75){
+            speed *= 0.5;
+            RCLCPP_INFO(this->get_logger(), "Obstacle detected at %f", mean_of_ranges_from_to(85, 95));
+        }
 
         // create and publish the AckermannDriveStamped message
         ackermann_msgs::msg::AckermannDriveStamped drive_msg;
@@ -226,6 +265,7 @@ private:
 
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr current_pose_sub_;
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr target_path_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
     rclcpp::Publisher<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr drive_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr lookahead_point_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr closest_point_pub_;
@@ -246,6 +286,7 @@ private:
     double throttle_lookahead_multiply_;
     double lookahead_distance_;
     double lookahead_parameter_;
+    double *ranges_;
 };
 
 
