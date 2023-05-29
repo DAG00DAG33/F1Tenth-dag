@@ -7,7 +7,7 @@
     speed_to_erpm_offset: 0.0
 
     # servo value (0 to 1) =  steering_angle_to_servo_gain * steering angle (radians) + steering_angle_to_servo_offset
-    steering_angle_to_servo_gain: -1.05 #-1.22 #-1.074465
+    steering_angle_to_servo_gain: -1.3 #-1.05 #-1.22 #-1.074465
     steering_angle_to_servo_offset: 0.46
 
     port: /dev/sensors/vesc

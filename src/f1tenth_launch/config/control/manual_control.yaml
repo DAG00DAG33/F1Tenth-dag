@@ -7,3 +7,4 @@ manual_control_node:
     throttle_multiplier: 2.0
     steering_gain: -0.335
     steering_offset: 0.0
+    constant_throttle: 1.0

@@ -3,7 +3,7 @@ ldlidar:
     serial_port: '/dev/sensors/lidar'
     topic_name: '/scan'
     lidar_frame: 'laser'
-    range_threshold: 0.005
+    range_threshold: 0.03
 
 razor_imu_node:
   ros__parameters:

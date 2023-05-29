@@ -89,7 +89,7 @@ private:
         if (ranges_[i] != std::numeric_limits<float>::infinity()) {
             // if it is nan discard
             if (ranges_[i] != ranges_[i])
-            ranges_[i] = 0;
+                ranges_[i] = 0;
             sum += ranges_[i];
             count++;
         }
@@ -161,20 +161,31 @@ private:
         
         // calculate the curvature
         double radius = calculateRadius(transformed_lookahead_point);
-        RCLCPP_INFO(this->get_logger(), "radius: %f", radius);
+        //RCLCPP_INFO(this->get_logger(), "radius: %f", radius);
         
-        // calculate the steering angle based on the curvature
-        double steering_angle = std::atan(wheelbase_ / radius);
 
         // lookahead for the speed
         geometry_msgs::msg::Point transformed_lookahead_point_speed = transformPoint(getLookaheadPoint(closest_point, closest_point_index, lookahead_distance_ * throttle_lookahead_multiply_), current_pose_);
         double speed = calculateSpeed(transformed_lookahead_point_speed);
         lookahead_distance_ = lookahead_parameter_ * speed;
 
-        if (std::abs(radius) > 3.5 || mean_of_ranges_from_to(85, 95) < lookahead_distance_ * 0.75){
-            speed *= 0.5;
-            RCLCPP_INFO(this->get_logger(), "Obstacle detected at %f", mean_of_ranges_from_to(85, 95));
+        if (std::abs(radius) > 1.4 && (mean_of_ranges_from_to(80, 100) < lookahead_distance_ * 1.6 || mean_of_ranges_from_to(80, 90) < lookahead_distance_ * 1.6 || mean_of_ranges_from_to(90, 100) < lookahead_distance_ * 1.6)){
+            speed *= linear_map(0, lookahead_distance_, 0, 0.2, mean_of_ranges_from_to(80, 100));//mean_of_ranges_from_to(80, 100);
+            lookahead_distance_ = mean_of_ranges_from_to(80, 100);
+            RCLCPP_INFO(this->get_logger(), "Obstacle detected at %f, with lookahead %f, so speed is %f", mean_of_ranges_from_to(85, 95), lookahead_distance_, speed);
+            if (mean_of_ranges_from_to(80, 90) > mean_of_ranges_from_to(90, 100))
+                radius = -0.5;
+            else   
+                radius = 0.5;
         }
+        else{
+            RCLCPP_INFO(this->get_logger(), "Obstacle NOT detected at %f, with lookahead %f, so speed is %f", mean_of_ranges_from_to(85, 95), lookahead_distance_, speed);
+            
+        }
+
+        // calculate the steering angle based on the curvature
+        double steering_angle = std::atan(wheelbase_ / radius);
+
 
         // create and publish the AckermannDriveStamped message
         ackermann_msgs::msg::AckermannDriveStamped drive_msg;

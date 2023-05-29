@@ -6,7 +6,7 @@ path_manager_node:
     transform_time_buffer: 1.0
     path_publish_frequency: 1.0
     path_sampling_frequency: 4.0
-    output_file: "paths/path21_v2.csv"
+    output_file: "paths/icra_02.csv"
     #input_file: "path.csv"
     save_path_ena: true
     sample_path_ena: true
@@ -36,7 +36,7 @@ async_slam_toolbox_node:
     # if you'd like to immediately start continuing a map at a given pose
     # or at the dock, but they are mutually exclusive, if pose is given
     # will use pose
-    map_file_name: maps/casa21_v2
+    map_file_name: maps/b
     # map_start_pose: [0.0, 0.0, 0.0]
     map_start_at_dock: true
 
