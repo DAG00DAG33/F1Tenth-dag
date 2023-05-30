@@ -174,8 +174,8 @@ private:
     // input_pose.pose.orientation.z = msg->pose.pose.orientation.x;
     // input_pose.pose.orientation.w = msg->pose.pose.orientation.w;
 
-    path_.header = transformed_pose_.header;
-    path_.poses.push_back(input_pose);
+    //path_.header = transformed_pose_.header;
+    //path_.poses.push_back(input_pose);
   }
 
   void sample_path()
