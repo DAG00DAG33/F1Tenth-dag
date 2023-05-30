@@ -6,12 +6,12 @@ path_manager_node:
     transform_time_buffer: 1.0
     path_publish_frequency: 1.0
     path_sampling_frequency: 4.0
-    output_file: "paths/icra_02.csv"
+    output_file: "paths/icra_x.csv"
     #input_file: "path.csv"
     save_path_ena: true
-    sample_path_ena: true
+    sample_path_ena: false #true
     load_path_ena: false
-    enable_button_used: true
+    enable_button_used: false #true
 
 
 # online async slam

@@ -48,6 +48,8 @@ public:
 
     odom_subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>(
       odom_topic, 10, std::bind(&PathManagerNode::odom_callback, this, std::placeholders::_1));
+    pose_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+      "/initialpose", 10, std::bind(&PathManagerNode::pose_callback, this, std::placeholders::_1));
     path_publisher_ = this->create_publisher<nav_msgs::msg::Path>(output_path_topic, 10);
     pose_publisher_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(output_pose_topic, 10);
     if (enable_button_used_)
@@ -158,6 +160,24 @@ private:
     }
   }
 
+  void pose_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
+  {
+    geometry_msgs::msg::PoseStamped input_pose;
+    RCLCPP_INFO(this->get_logger(), "Pose Received");
+    input_pose.header = msg->header;
+    input_pose.pose = msg->pose.pose;
+    // input_pose.pose.position.x = msg->pose.pose.position.x;
+    // input_pose.pose.position.y = msg->pose.pose.position.y;
+    // input_pose.pose.position.z = msg->pose.pose.position.z;
+    // input_pose.pose.orientation.x = msg->pose.pose.orientation.x;
+    // input_pose.pose.orientation.y = msg->pose.pose.orientation.x;
+    // input_pose.pose.orientation.z = msg->pose.pose.orientation.x;
+    // input_pose.pose.orientation.w = msg->pose.pose.orientation.w;
+
+    path_.header = transformed_pose_.header;
+    path_.poses.push_back(input_pose);
+  }
+
   void sample_path()
   {
     if (!sample_path_ena_ || (enable_button_used_ && !button_enabled_pressed_))
@@ -174,6 +194,7 @@ private:
   }
 
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_subscriber_;
   rclcpp::Subscription<std_msgs::msg::Int8>::SharedPtr button_subscriber_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_publisher_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_publisher_;

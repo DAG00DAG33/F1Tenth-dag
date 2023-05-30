@@ -8,7 +8,7 @@ target:
     path_publish_frequency: 1.0
     #path_sampling_frequency: 2.0
     #output_file: "path2.csv"
-    input_file: "paths/icra_01.csv"
+    input_file: "paths/icra_03.csv"
     save_path_ena: false
     sample_path_ena: false
     load_path_ena: true
