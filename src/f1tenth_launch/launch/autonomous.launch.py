@@ -88,6 +88,7 @@ def generate_launch_description():
             package='vesc_ackermann',
             executable='vesc_to_odom_node',
             name='vesc_to_odom_node',
+            respawn=True,
             parameters=[LaunchConfiguration('vesc_config')]
         ),
         Node(
@@ -128,6 +129,7 @@ def generate_launch_description():
             executable='async_slam_toolbox_node',
             name='async_slam_toolbox_node',
             output='screen',
+            respawn=True,
             parameters=[
                 LaunchConfiguration('control_config'),
                 {'use_sim_time': False}
@@ -150,5 +152,14 @@ def generate_launch_description():
         #     executable='imu_to_odom_node',
         #     output='screen',
         #     parameters=[LaunchConfiguration('sensors_config')]
+        # ),
+        # Node(
+        #     package='nav2_map_server',
+        #     executable='map_server',
+        #     name='map_server',
+        #     output='screen',
+        #     parameters=[
+        #         {'yaml_filename': '/home/ubuntu/F1Tenth-dag/maps/b.yaml'},
+        #     ],
         # ),
   ])

@@ -8,7 +8,7 @@ target:
     path_publish_frequency: 1.0
     #path_sampling_frequency: 2.0
     #output_file: "path2.csv"
-    input_file: "paths/icra_03.csv"
+    input_file: "paths/icra_04.csv"
     save_path_ena: false
     sample_path_ena: false
     load_path_ena: true
@@ -17,10 +17,10 @@ pure_pursuit_node:
   ros__parameters:
     # constant_throttle: 1.5
     initial_lookahead_distance: 0.8 #l < 2*min_radius #min_radius = minum possible by the car or minimum in the track
-    max_throttle: 2.0 #3.0
-    max_throttle_radius: 4.0 #9.0
-    min_throttle: 1.5
-    min_throttle_radius: 2.25
+    max_throttle: 2.0 #3.0 #2.5
+    max_throttle_radius: 4.0 #9.0 #6.25
+    min_throttle: 1.5 #1.0 #1.5
+    min_throttle_radius: 2.25 #1.0 #2.25
     throttle_parameter: 1.0
     throttle_lookahead_multiply: 2.0
     lookahead_parameter: 0.5
@@ -42,7 +42,7 @@ path:
     #output_file: "path2.csv"
     #input_file: "path3.csv"
     save_path_ena: false
-    sample_path_ena: true
+    sample_path_ena: false
     load_path_ena: false
 
 
@@ -70,26 +70,26 @@ async_slam_toolbox_node:
     # or at the dock, but they are mutually exclusive, if pose is given
     # will use pose
     map_file_name: maps/b
-    # map_start_pose: [0.0, 0.0, 0.0]
-    map_start_at_dock: true
+    map_start_pose: [2.0, 2.0, 3.142]
+    map_start_at_dock: false
 
     # debug_logging: false
-    # throttle_scans: 8
+    # throttle_scans: 4
     # transform_publish_period: 0.02 #if 0 never publishes odometry
     # map_update_interval: 5.0
-    resolution: 0.1 #0.05
-    # max_laser_range: 14.0 #6.0 #12.0 #for rastering images
+    resolution: 0.2 #0.05
+    max_laser_range: 10.0 #6.0 #12.0 #for rastering images
     # minimum_time_interval: 10.0 #0.1 #0.5
-    # transform_timeout: 0.1
+    transform_timeout: 1.0 #0.1
     # tf_buffer_duration: 30.
-    # stack_size_to_use: 40000000 #40000000// program needs a larger stack size to serialize large maps
-    # enable_interactive_mode: true
+    stack_size_to_use: 400000 #40000000// program needs a larger stack size to serialize large maps
+    enable_interactive_mode: false
 
     # # General Parameters
     # use_scan_matching: true
     # use_scan_barycenter: true
-    # minimum_travel_distance: 0.1 #0.02 #0.1
-    # minimum_travel_heading: 0.5 #0.05 #0.5
+    minimum_travel_distance: 0.02 #0.02 #0.1
+    minimum_travel_heading: 0.05 #0.5 #0.05 #0.5
     # scan_buffer_size: 10 #2 #10
     # scan_buffer_maximum_scan_distance: 10.0
     # link_match_minimum_response_fine: 0.1  

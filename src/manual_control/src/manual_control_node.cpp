@@ -34,6 +34,10 @@ private:
   double steering_offset_;
 
   double constant_throttle_;
+  double drive_multiplier_;
+  double prev_drive_multiplier_button_value_;
+
+  int kill_button_prev_;
 
   // Callback function for joystick messages
   void joyCallback(const sensor_msgs::msg::Joy::SharedPtr joy) {
@@ -64,15 +68,33 @@ private:
 
     ackermann_msg.drive.steering_angle = -joy->axes[left_horizontal_axis_idx_] * steering_gain_ + steering_offset_;
 
-
     // Publish the Ackermann command
     ackermann_pub_->publish(ackermann_msg);
+
+
+    if (joy->axes[7] == 1.0 && prev_drive_multiplier_button_value_ == 0.0){
+      drive_multiplier_ += 0.05;
+      RCLCPP_INFO(this->get_logger(), "multiplier changed to %f", drive_multiplier_);
+    }
+    else if (joy->axes[7] == -1.0 && prev_drive_multiplier_button_value_ == 0.0){
+      drive_multiplier_ -= 0.05;
+      RCLCPP_INFO(this->get_logger(), "multiplier changed to %f", drive_multiplier_);
+    }
+    prev_drive_multiplier_button_value_ = joy->axes[7];
+
+    if (kill_button_prev_ == 0 && joy->buttons[1] == 1){
+      system("pkill async_slam_tool && pkill vesc_to_odom_node");
+      RCLCPP_INFO(this->get_logger(), "Killed async_slam_tool and vesc_to_odom_node");
+    }
+    kill_button_prev_ = joy->buttons[1];
+
   }
 
   // Callback function for autonomous driving messages
   void driveCallback(const ackermann_msgs::msg::AckermannDriveStamped::SharedPtr drive) {
     // If the LB button is pressed, use the autonomous driving commands
     if (button_pressed_) {
+      drive->drive.speed *= drive_multiplier_;
       ackermann_pub_->publish(*drive);
     }
   }
@@ -118,6 +140,8 @@ public:
     ackermann_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>(ackermann_cmd_topic_, 10);
     enable_button_pub_ = this->create_publisher<std_msgs::msg::Int8>("/enable_0", 10);
     enable_button1_pub_ = this->create_publisher<std_msgs::msg::Int8>("/enable_1", 10);
+
+    drive_multiplier_ = 1.0;
   }
 };
 
